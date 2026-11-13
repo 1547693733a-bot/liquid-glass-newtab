@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新标签页</title>
+  <link rel="icon" type="image/png" href="icons/icon48.png">
+  <link rel="stylesheet" href="css/liquid-glass.css">
+</head>
+<body>
+
+  <!-- 高清动态壁纸与双缓冲过渡层 -->
+  <div class="wallpaper-container" id="wallpaperContainer">
+    <div class="liquid-mesh-bg" id="liquidMeshBg"></div>
+    <div class="wallpaper-layer active" id="wallpaperLayer1"></div>
+    <div class="wallpaper-layer" id="wallpaperLayer2"></div>
+  </div>
+
+  <!-- 景深柔化与暗化蒙版 -->
+  <div class="wallpaper-overlay" id="wallpaperOverlay"></div>
+
+  <!-- 苹果空间灵动氛围光晕层 (Apple Spatial Ambient Orbs) -->
+  <div class="ambient-glow ambient-glow-1"></div>
+  <div class="ambient-glow ambient-glow-2"></div>
+
+  <!-- 主应用容器 -->
+  <div class="app-wrapper">
+
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+      <!-- 左侧平衡占位区 (去除了原来的品牌胶囊) -->
+      <div class="top-left-spacer"></div>
+
+      <!-- 核心视图切换分段控制器 (独立展示我的主页与精选工具) -->
+      <nav class="view-tabs">
+        <button class="tab-btn active" id="tabHome">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <span>我的主页</span>
+        </button>
+        <button class="tab-btn" id="tabTools">
+          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+          <span>精选工具</span>
+        </button>
+      </nav>
+
+      <!-- 顶栏快捷操作 -->
+      <div class="top-actions">
+        <button class="glass-pill-btn top-archive-btn" id="openArchiveBtn" title="稍后使用暂存箱与全网发现历史长廊">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 8v13H3V8"></path>
+            <path d="M1 3h22v5H1z"></path>
+            <path d="M10 12h4"></path>
+          </svg>
+          <span>暂存与历史</span>
+          <span class="archive-count-badge" id="archiveCountBadge" style="display: none;">0</span>
+        </button>
+        <button class="glass-circle-btn" id="randomWallpaperBtn" title="切换下一张壁纸 (随机换壁纸)">
+          <svg viewBox="0 0 24 24">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
+        <button class="glass-circle-btn" id="settingsBtn" title="个性化设置">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 空间灵动聚合搜索区域 -->
+    <section class="search-section">
+      <div class="search-halo"></div>
+      <div class="search-bar-wrapper">
+        <div class="search-bar">
+          <!-- 搜索引擎选择胶囊 -->
+          <div class="engine-trigger" id="engineTrigger" title="点击切换搜索引擎">
+            <div class="engine-icon">
+              <img id="currentEngineIcon" src="https://www.google.com/favicon.ico" alt="Engine" />
+            </div>
+            <span id="currentEngineName">Google</span>
+            <div class="engine-divider"></div>
+            <svg class="engine-arrow" viewBox="0 0 24 24" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+
+          <!-- 搜索输入框 -->
+          <input 
+            type="text" 
+            class="search-input" 
+            id="searchInput" 
+            placeholder="搜索全网或输入网址直达..." 
+            autocomplete="off" 
+            spellcheck="false" 
+          />
+
+          <!-- 快捷热键提示角标 -->
+          <span class="search-hotkey-badge" id="searchHotkeyBadge" title="按斜杠直接唤起搜索">/</span>
+
+          <!-- 清除文字按钮 -->
+          <button class="search-clear-btn" id="searchClearBtn" title="清空输入">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+
+          <!-- 提交搜索按钮 -->
+          <button class="search-submit-btn" id="searchSubmitBtn" title="搜索">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+
+        <!-- 搜索引擎选择下拉浮层 -->
+        <div class="engine-popover" id="enginePopover"></div>
+      </div>
+    </section>
+
+    <!-- 主体多视图容器 (两视图独立隔离展示) -->
+    <main class="views-container">
+
+      <!-- 视图 1: 我的主页快捷方式网格 -->
+      <section class="view-panel active" id="viewHome">
+        
+        <!-- 首页快捷方式栏头控制器 -->
+        <div class="shortcuts-header-bar">
+          <div class="shortcuts-title-group">
+            <h2 class="shortcuts-heading">常用快捷方式</h2>
+            <span class="shortcuts-count-pill" id="shortcutsCountPill">8 个站点</span>
+          </div>
+          <div class="shortcuts-header-actions">
+            <!-- 直接从书签栏添加按钮 -->
+            <button class="glass-pill-action-btn" id="homeQuickBookmarksBtn" title="从浏览器的书签栏快速导入">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>从书签导入</span>
+            </button>
+            <!-- 手动添加按钮 -->
+            <button class="glass-pill-action-btn primary" id="homeQuickAddBtn" title="手动输入添加网址">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>添加</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 快捷方式网格 (图标直接放大呈现，不再嵌套大外框) -->
+        <div class="shortcuts-grid" id="shortcutsGrid">
+          <!-- 由 shortcuts.js 动态渲染快捷方式和添加按钮 -->
+        </div>
+
+        <!-- 今日更新与全网新发现宽卡片区域 -->
+        <div class="home-daily-section" id="homeDailySection">
+          
+          <!-- 第 1 层：规整统一的主导览栏 (标题/计数 + 3模态分段控制器 + 快捷工具组) -->
+          <div class="home-daily-nav-bar">
+            <!-- 左侧：标题与计数徽标 -->
+            <div class="daily-nav-title-box">
+              <svg class="daily-nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <h2 class="daily-nav-heading">全网发现</h2>
+              <span class="daily-nav-count" id="homeDailyCountBadge">实时聚合</span>
+            </div>
+
+            <!-- 中间：三维模式分段控制器 (综合动态 / 破茧资讯 / 创新工具) -->
+            <div class="home-daily-main-tabs" id="homeDailyMainTabs">
+              <button class="main-tab-pill active" data-mode="all">
+                <span class="main-tab-icon">🌟</span>
+                <span>综合动态</span>
+              </button>
+              <button class="main-tab-pill" data-mode="news">
+                <span class="main-tab-icon">📰</span>
+                <span>破茧资讯</span>
+              </button>
+              <button class="main-tab-pill" data-mode="tools">
+                <span class="main-tab-icon">🛠️</span>
+                <span>创新工具</span>
+              </button>
+            </div>
+
+            <!-- 右侧：精炼工具栏 (刷新 / AI提炼 / 订阅管理) -->
+            <div class="daily-nav-actions">
+              <button class="daily-tool-btn" id="homeSyncDailyBtn" title="重新从各大源抓取最新内容">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span id="homeSyncDailyText">刷新</span>
+              </button>
+              <button class="daily-tool-btn" id="homeAiScanBtn" title="调用 AI 大模型深度提炼">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"></path>
+                </svg>
+                <span id="homeAiScanText">AI提炼</span>
+              </button>
+              <button class="daily-tool-btn" id="homeManageNewsBtn" title="管理破茧资讯订阅源与自定义 RSS">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 11a9 9 0 0 1 9 9"></path>
+                  <path d="M4 4a16 16 0 0 1 16 16"></path>
+                  <circle cx="5" cy="19" r="1"></circle>
+                </svg>
+                <span>订阅源</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 第 2 层：轻量优雅的二级子分类筛选条 -->
+          <div class="daily-subchannel-wrapper">
+            <div class="daily-source-pills" id="homeSourcePills">
+              <!-- 由 app.js 动态渲染来源胶囊 -->
+            </div>
+          </div>
+
+          <!-- 宽卡片自适应网格 (双列横向大卡片) -->
+          <div class="home-wide-grid" id="homeWideGrid">
+            <!-- 由 app.js 动态渲染宽卡片 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 视图 2: 精选工具库 (独立常备纯净工具库，不含主页每日动态) -->
+      <section class="view-panel" id="viewTools">
+        <div class="tools-header">
+          <!-- 分类筛选器 -->
+          <div class="tools-categories" id="toolCategories"></div>
+          <!-- 右侧搜索过滤 -->
+          <div class="tools-actions-wrapper">
+            <div class="tools-filter-wrapper">
+              <svg class="tools-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" class="tools-filter-input" id="toolFilterInput" placeholder="在常驻精选工具中搜索..." />
+            </div>
+          </div>
+        </div>
+
+        <!-- 奇趣探索更新状态条 (当用户切换至奇趣探索分类时展现) -->
+        <div class="fun-explore-banner" id="funExploreBanner" style="display: none;">
+          <div class="fun-banner-left">
+            <span class="fun-banner-icon">🌈</span>
+            <span class="fun-banner-title">奇趣探索更新源</span>
+            <span class="fun-banner-sub">每 3 天探索更新脑洞互动与极客视觉实验</span>
+            <span class="fun-banner-badge" id="funLastSyncBadge">刚刚更新</span>
+          </div>
+          <button class="glass-pill-action-btn" id="funSyncBtn" title="手动探索最新奇趣脑洞网站与创意实验">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span id="funSyncBtnText">探索新奇</span>
+          </button>
+        </div>
+
+        <!-- 工具卡片网格 -->
+        <div class="tools-grid" id="toolsGrid">
+          <!-- 由 app.js 动态渲染 -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 底部状态栏 -->
+    <footer class="bottom-bar">
+      <div class="wallpaper-info" id="wallpaperInfo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+        <span>Bing 每日高清壁纸</span>
+      </div>
+      <div class="bottom-tips">
+        <span>按 <kbd>/</kbd> 聚焦搜索</span>
+        <span class="tip-sep">•</span>
+        <span>按 <kbd>Esc</kbd> 关闭浮层</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- 添加 / 编辑快捷方式模态窗 (支持手动添加 & 书签栏导入双模式) -->
+  <div class="modal-backdrop" id="shortcutModal">
+    <div class="modal-card modal-card-wide">
+      <div class="modal-header">
+        <!-- 弹窗分段控制器 (手动录入 vs 书签栏导入) -->
+        <div class="modal-tabs" id="shortcutModalTabs">
+          <button class="modal-tab-btn active" id="modalTabManual" data-tab="manual">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <span>手动添加网址</span>
+          </button>
+          <button class="modal-tab-btn" id="modalTabBookmarks" data-tab="bookmarks">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+            <span>从浏览器书签添加</span>
+          </button>
+        </div>
+        <button class="modal-close-btn" id="shortcutModalClose" title="关闭">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- 面板 1: 手动添加/编辑表单 -->
+      <div class="modal-tab-panel active" id="panelManualShortcut">
+        <div class="form-group">
+          <label class="form-label" for="shortcutUrlInput">网址链接 (URL) *</label>
+          <input type="text" class="form-input" id="shortcutUrlInput" placeholder="例如：https://github.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="shortcutNameInput">名称 (留空将自动从网址提取)</label>
+          <input type="text" class="form-input" id="shortcutNameInput" placeholder="例如：GitHub" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="shortcutIconInput">自定义图标链接 (可选，默认自动识别)</label>
+          <input type="text" class="form-input" id="shortcutIconInput" placeholder="支持 PNG/SVG/ICO 图标图片链接" />
+          <div class="form-hint">留空时系统将通过高清 Favicon 引擎自动获取网站 Logo</div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" id="shortcutCancelBtn">取消</button>
+          <button class="btn-primary" id="shortcutSaveBtn">保存到首页</button>
+        </div>
+      </div>
+
+      <!-- 面板 2: 浏览器书签栏导入器 -->
+      <div class="modal-tab-panel" id="panelBookmarksShortcut">
+        <div class="bookmarks-toolbar">
+          <div class="bookmarks-search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" class="form-input" id="bookmarksSearchInput" placeholder="搜索书签标题、网址或文件夹..." />
+          </div>
+          <button class="btn-secondary bookmarks-batch-btn" id="bookmarksBatchImportBtn" title="一键将书签栏前 8 个常用书签添加至首页">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>批量导入常用</span>
+          </button>
+        </div>
+
+        <!-- 运行环境提示 (如果是本地预览环境) -->
+        <div class="bookmarks-status-banner" id="bookmarksStatusBanner" style="display: none;"></div>
+
+        <!-- 书签列表容器 -->
+        <div class="bookmarks-list" id="bookmarksListContainer">
+          <!-- 动态渲染书签条目 -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 今日发现详情小卡片模态窗 (点击工具卡片时弹出高颜值中文卡片) -->
+  <div class="modal-backdrop" id="toolDetailModal">
+    <div class="modal-card modal-card-detail">
+      <div class="modal-header">
+        <div class="detail-header-left">
+          <div class="detail-icon-box">
+            <img id="detailToolIcon" src="" alt="Icon" />
+          </div>
+          <div class="detail-title-group">
+            <div class="detail-title-row">
+              <h3 class="detail-title" id="detailToolTitle">工具名称</h3>
+              <span class="tool-badge daily" id="detailToolBadge">今日新品</span>
+              <span class="tool-badge ai-badge" id="detailToolAiBadge" style="display: none;">✨ AI 深度解析</span>
+            </div>
+            <div class="detail-meta" id="detailToolMeta">Product Hunt • 今日更新</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="toolDetailModalClose" title="关闭">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- 详细介绍正文 (纯正地道中文) -->
+      <div class="detail-body">
+        <div class="detail-section">
+          <div class="detail-section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span>功能与应用场景 (中文详解)</span>
+          </div>
+          <p class="detail-desc-zh" id="detailToolDescZh">正在生成详细中文介绍...</p>
+        </div>
+
+        <div class="detail-section" id="detailHighlightsSection">
+          <div class="detail-section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span>核心亮点与标签</span>
+          </div>
+          <div class="detail-highlights-chips" id="detailToolHighlights">
+            <!-- 动态高亮标签 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部操作按钮 -->
+      <div class="modal-actions detail-actions">
+        <button class="btn-secondary" id="detailAiRescanBtn" title="调用配置的 AI 大模型重新深度生成本卡片概要">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"></path>
+          </svg>
+          <span id="detailAiRescanText">AI 深度提炼</span>
+        </button>
+        <button class="btn-secondary" id="detailSaveArchiveBtn" title="暂存到稍后使用，以备今后用到">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span id="detailSaveArchiveText">⭐ 暂存归档</span>
+        </button>
+        <button class="btn-secondary" id="detailAddToHomeBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span id="detailAddToHomeText">＋ 添加到首页快捷方式</span>
+        </button>
+        <a class="btn-primary" id="detailVisitSiteBtn" href="#" target="_blank" rel="noopener noreferrer">
+          <span>🚀 访问官方主页</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 个性化设置模态窗 -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">个性化与设置</h3>
+        <button class="modal-close-btn" id="settingsCloseBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- 壁纸引擎设置 -->
+      <div class="setting-section">
+        <div class="setting-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          壁纸引擎设置
+        </div>
+        <div class="form-group">
+          <label class="form-label">壁纸源</label>
+          <select class="form-select" id="settingWpSource">
+            <option value="bing">Bing 微软每日超清壁纸 (自然风光)</option>
+            <option value="apple">Apple 原厂液态流体壁纸 (iOS / macOS 风格)</option>
+            <option value="unsplash">Unsplash 4K 极简摄影 (建筑与风景)</option>
+            <option value="anime">二次元治愈系插画</option>
+            <option value="mesh">纯代码实时动态流体 (无需网络/8款风格)</option>
+            <option value="custom">自定义壁纸图片 URL</option>
+          </select>
+        </div>
+        <!-- 纯代码流体渐变子风格选择 -->
+        <div class="form-group" id="settingMeshStyleGroup" style="display: none;">
+          <label class="form-label">纯代码流体渐变风格</label>
+          <select class="form-select" id="settingMeshStyle">
+            <option value="auto">🎲 自动轮换各种风格</option>
+            <option value="0">天青极光 (Aurora)</option>
+            <option value="1">暮光落霞 (Sunset)</option>
+            <option value="2">暗夜电光 (Midnight Neon)</option>
+            <option value="3">薄荷翠影 (Emerald Oasis)</option>
+            <option value="4">梦幻薰衣草 (Dreamy Lavender)</option>
+            <option value="5">日蚀金辉 (Solar Flare)</option>
+            <option value="6">星河深空 (Deep Cosmos)</option>
+            <option value="7">深海琉璃 (Oceanic Abyss)</option>
+          </select>
+        </div>
+        <div class="form-group" id="settingCustomUrlGroup" style="display: none;">
+          <label class="form-label">自定义壁纸图片链接</label>
+          <input type="text" class="form-input" id="settingCustomWpUrl" placeholder="https://..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">自动变换策略</label>
+          <select class="form-select" id="settingWpFreq">
+            <option value="every_newtab">每次打开新标签页随机更换 (推荐)</option>
+            <option value="hourly">每隔 1 小时自动变换</option>
+            <option value="daily">每日自动变换</option>
+            <option value="static">保持当前壁纸固定</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 破茧资讯源与自定义 RSS 订阅设置 (打破信息茧房) -->
+      <div class="setting-section" id="settingSectionNews">
+        <div class="setting-title" style="justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 11a9 9 0 0 1 9 9"></path>
+              <path d="M4 4a16 16 0 0 1 16 16"></path>
+              <circle cx="5" cy="19" r="1"></circle>
+            </svg>
+            <span>破茧资讯源与 RSS 订阅</span>
+          </div>
+          <span class="setting-title-tag">打破信息茧房</span>
+        </div>
+
+        <div class="form-hint" style="margin-bottom: 14px; color: var(--accent-cyan);">
+          ✨ 聚合人文哲学、全球视野、宏观财经、自然科学、艺术美学与前沿科技，真正跳出单一技术圈与算法茧房，开拓跨界视野。
+        </div>
+
+        <!-- 内置多维破茧资讯源开关网格 -->
+        <div class="news-sources-grid" id="newsSourcesGrid">
+          <!-- 由 app.js 动态渲染 12 大跨界内置源开关：知乎日报、Aeon 人文、BBC 中文、FT中文网、自然科学、艺术美学、Solidot 奇客、阮一峰周刊、少数派、极客公园、Hacker News、AIHot -->
+        </div>
+
+        <!-- 自定义 RSS 订阅区域 -->
+        <div class="custom-rss-box">
+          <div class="custom-rss-header">
+            <div class="custom-rss-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>自定义 RSS / Atom 订阅源</span>
+            </div>
+            <span class="custom-rss-hint">支持订阅任意专业博客、科技媒体或行业期刊</span>
+          </div>
+          <div class="custom-rss-input-row">
+            <input type="text" class="form-input custom-rss-name-input" id="customRssName" placeholder="源名称 (如：InfoQ 深度 / 36氪)" />
+            <input type="text" class="form-input custom-rss-url-input" id="customRssUrl" placeholder="RSS/Atom 地址 (https://...)" />
+            <button type="button" class="btn-primary custom-rss-add-btn" id="addCustomRssBtn">＋ 订阅并破茧</button>
+          </div>
+          <!-- 已订阅自定义源列表 -->
+          <div class="custom-feeds-list" id="customFeedsList">
+            <!-- 动态渲染自定义源标签 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 大模型引擎设置 (每日新发现智能深度扫描) -->
+      <div class="setting-section" id="settingSectionAi">
+        <div class="setting-title" style="justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"></path>
+            </svg>
+            <span>AI 大模型深度概要引擎</span>
+          </div>
+          <label class="switch-toggle" title="开启/关闭 AI 大模型深度提炼">
+            <input type="checkbox" id="settingAiToggle" />
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+
+        <div class="ai-config-body" id="aiConfigBody">
+          <div class="form-hint" style="margin-bottom: 12px; color: var(--accent-cyan);">
+            ✨ 开启后，在发现每日新工具时调用您配置的 AI 模型，自动深度提炼地道中文定位、痛点解析与核心亮点。
+          </div>
+
+          <!-- 模型服务商预设 -->
+          <div class="form-group">
+            <label class="form-label">服务商 / 接口预设</label>
+            <select class="form-select" id="settingAiProvider">
+              <option value="deepseek">DeepSeek (深度求索 - 强烈推荐，极高性价比)</option>
+              <option value="oneapi">🌐 聚合平台 (OneAPI / NewAPI / 聚合中转站)</option>
+              <option value="openrouter">OpenRouter (全球模型聚合市场)</option>
+              <option value="siliconflow">硅基流动 (SiliconFlow - 极速开源聚合平台)</option>
+              <option value="qwen">阿里通义千问 (DashScope)</option>
+              <option value="moonshot">月之暗面 Kimi (Moonshot AI)</option>
+              <option value="openai">OpenAI (ChatGPT 官方)</option>
+              <option value="ollama">Ollama (本地私有化部署，无需联网)</option>
+              <option value="custom">自定义兼容 API (支持第三方中转与私有模型)</option>
+            </select>
+          </div>
+
+          <!-- API Base URL -->
+          <div class="form-group">
+            <label class="form-label" for="settingAiBaseUrl">API Base URL (接口基础地址)</label>
+            <input type="text" class="form-input" id="settingAiBaseUrl" placeholder="https://api.deepseek.com/v1" />
+            <div class="form-hint" style="margin-top: 4px;">支持输入根域名、/v1 或完整 /chat/completions，引擎将智能规范化自适应</div>
+          </div>
+
+          <!-- API Key -->
+          <div class="form-group" id="settingAiApiKeyGroup">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" for="settingAiApiKey" style="margin-bottom: 0;">API Key 密钥</label>
+              <button type="button" class="btn-text-action" id="toggleAiKeyVisibility">显示密钥</button>
+            </div>
+            <input type="password" class="form-input" id="settingAiApiKey" placeholder="sk-..." autocomplete="off" />
+            <div class="form-hint">密钥仅保存在您的本地浏览器 Storage，安全无泄漏风险</div>
+          </div>
+
+          <!-- Model Name -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" for="settingAiModel" style="margin-bottom: 0;">模型名称 (Model)</label>
+              <button type="button" class="btn-text-action" id="fetchAiModelsBtn" title="从聚合平台或网关自动拉取当前可用模型">🔄 拉取可用模型</button>
+            </div>
+            <div style="position: relative;">
+              <input type="text" class="form-input" id="settingAiModel" placeholder="deepseek-chat 或输入聚合模型ID" list="aiModelDatalist" />
+              <datalist id="aiModelDatalist"></datalist>
+            </div>
+            <div class="ai-model-quick-pills" id="aiModelQuickPills" style="display: none;"></div>
+          </div>
+
+          <!-- 操作按钮与测试连接 -->
+          <div class="ai-action-row">
+            <button type="button" class="btn-secondary" id="testAiConnectionBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              <span id="testAiConnectionText">测试 API 连接</span>
+            </button>
+            <button type="button" class="btn-secondary" id="triggerAiBatchScanBtn" title="使用配置的大模型立即重新扫描提炼今日新发现">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"></path></svg>
+              <span id="triggerAiBatchScanText">立即深度扫描今日发现</span>
+            </button>
+          </div>
+          <div class="ai-status-banner" id="aiStatusBanner" style="display: none;"></div>
+        </div>
+      </div>
+
+      <!-- 视觉效果调节 -->
+      <div class="setting-section">
+        <div class="setting-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0 0 20z"></path></svg>
+          液态玻璃视觉调节
+        </div>
+        <div class="form-group">
+          <label class="form-label">背景暗化蒙版 (提升文字辨识度)</label>
+          <div class="slider-container">
+            <input type="range" class="range-slider" id="settingMaskSlider" min="10" max="80" step="5" value="35" />
+            <span class="slider-val" id="settingMaskVal">35%</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">背景高斯模糊 (景深质感)</label>
+          <div class="slider-container">
+            <input type="range" class="range-slider" id="settingBlurSlider" min="0" max="30" step="2" value="0" />
+            <span class="slider-val" id="settingBlurVal">0px</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 交互行为 -->
+      <div class="setting-section">
+        <div class="setting-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+          交互偏好
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 0;">
+          <span style="font-size: 14px; color: var(--text-secondary);">点击快捷方式在新标签页打开</span>
+          <input type="checkbox" id="settingNewTabToggle" checked style="width: 18px; height: 18px; accent-color: #0A84FF; cursor: pointer;" />
+        </div>
+      </div>
+
+      <!-- 数据备份与重置 -->
+      <div class="setting-section">
+        <div class="setting-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          数据备份与恢复
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn-secondary" id="exportDataBtn" style="font-size: 13px; padding: 7px 16px;">导出备份 (JSON)</button>
+          <button class="btn-secondary" id="importDataBtn" style="font-size: 13px; padding: 7px 16px;">导入恢复</button>
+          <input type="file" id="importDataFile" accept=".json" style="display: none;" />
+          <button class="btn-secondary" id="resetDefaultsBtn" style="font-size: 13px; padding: 7px 16px; color: #ff453a; border-color: rgba(255, 69, 58, 0.4);">恢复出厂默认</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 历史足迹与稍后使用暂存归档模态窗 (解决“万一今后要用到”的网站收纳痛点) -->
+  <div class="modal-backdrop" id="archiveModal">
+    <div class="modal-card modal-card-archive">
+      <div class="modal-header">
+        <div class="archive-header-tabs">
+          <button class="modal-tab-btn active" id="archiveTabSaved" data-tab="saved">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 8v13H3V8"></path>
+              <path d="M1 3h22v5H1z"></path>
+              <path d="M10 12h4"></path>
+            </svg>
+            <span>📦 稍后使用 (<span id="archiveSavedCount">0</span>)</span>
+          </button>
+          <button class="modal-tab-btn" id="archiveTabHistory" data-tab="history">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>🕒 发现历史长廊 (<span id="archiveHistoryCount">0</span>)</span>
+          </button>
+        </div>
+        <button class="modal-close-btn" id="archiveModalClose" title="关闭 (Esc)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 搜索与来源分类过滤栏 -->
+      <div class="archive-filter-bar">
+        <div class="archive-search-box">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" class="archive-search-input" id="archiveSearchInput" placeholder="在暂存与历史记录中快速搜索网站或关键词..." />
+        </div>
+        <div class="archive-source-pills" id="archiveSourcePills">
+          <button class="archive-pill active" data-source="all">全部</button>
+          <button class="archive-pill" data-source="AIHot">🔥 AIHot</button>
+          <button class="archive-pill" data-source="Product Hunt">🅿️ PH新品</button>
+          <button class="archive-pill" data-source="GitHub">★ GitHub</button>
+          <button class="archive-pill" data-source="Hacker News">Y Show HN</button>
+          <button class="archive-pill" data-source="V2EX">V V2EX</button>
+          <button class="archive-pill" data-source="奇趣探索">🌈 奇趣</button>
+        </div>
+      </div>
+
+      <!-- 列表内容滚动区 -->
+      <div class="archive-list" id="archiveList">
+        <!-- 由 app.js 动态填充 -->
+      </div>
+
+      <!-- 底部管理工具栏 -->
+      <div class="archive-footer">
+        <div class="archive-footer-left">
+          <span class="archive-tips" id="archiveFooterTips">💡 暂存箱永久保存，今后要用时随时一键添加至首页或直达</span>
+        </div>
+        <div class="archive-footer-actions">
+          <button class="btn-secondary btn-sm" id="exportArchiveJsonBtn" title="将暂存箱导出为 JSON 备份">导出 JSON</button>
+          <button class="btn-secondary btn-sm" id="exportArchiveHtmlBtn" title="导出为 Chrome/Edge 浏览器书签 HTML">导出为书签</button>
+          <button class="btn-secondary btn-sm danger" id="clearHistoryBtn" style="display: none;" title="清空历史时间线">清空历史足迹</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 全局 Toast 提示 -->
+  <div class="toast-notice" id="toastNotice"></div>
+
+  <!-- 脚本加载 -->
+  <script src="js/archive-history.js"></script>
+  <script src="js/ai-service.js"></script>
+  <script src="js/tools-data.js"></script>
+  <script src="js/tools-daily.js"></script>
+  <script src="js/bookmarks.js"></script>
+  <script src="js/wallpaper.js"></script>
+  <script src="js/shortcuts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
