@@ -184,8 +184,17 @@
               </button>
             </div>
 
-            <!-- 右侧：精炼工具栏 (刷新 / AI提炼 / 订阅管理) -->
+            <!-- 右侧：精炼工具栏 (今日总览 / 刷新 / AI提炼 / 订阅管理) -->
             <div class="daily-nav-actions">
+              <button class="daily-tool-btn daily-tool-btn-accent" id="homeAiOverviewBtn" title="让 AI 梳理概括全部订阅源的今日总览">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="4"></rect>
+                  <path d="M8 9h8"></path>
+                  <path d="M8 13h5"></path>
+                  <path d="M8 17h3"></path>
+                </svg>
+                <span id="homeAiOverviewBtnText">今日总览</span>
+              </button>
               <button class="daily-tool-btn" id="homeSyncDailyBtn" title="重新从各大源抓取最新内容">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="23 4 23 10 17 10"></polyline>
@@ -215,6 +224,25 @@
           <div class="daily-subchannel-wrapper">
             <div class="daily-source-pills" id="homeSourcePills">
               <!-- 由 app.js 动态渲染来源胶囊 -->
+            </div>
+          </div>
+
+          <!-- AI 跨界今日总览简报卡片 -->
+          <div class="ai-overview-card" id="aiDailyOverviewCard">
+            <div class="ai-overview-header">
+              <div class="ai-overview-title-group">
+                <span class="ai-overview-spark">✦ AI 今日总览</span>
+                <span class="ai-overview-meta" id="aiOverviewMeta">多订阅源跨界简报</span>
+              </div>
+              <div class="ai-overview-actions">
+                <button class="ai-ov-btn" id="refreshAiOverviewBtn" title="调用大模型重新概括当前订阅源总览">
+                  <span id="refreshAiOverviewText">✨ 生成总览</span>
+                </button>
+                <button class="ai-ov-btn ai-ov-toggle" id="toggleAiOverviewBtn" title="展开或收起今日总览">收起</button>
+              </div>
+            </div>
+            <div class="ai-overview-body" id="aiDailyOverviewBody">
+              <!-- 由 app.js 动态渲染总览正文、跨界分栏与精读推荐 -->
             </div>
           </div>
 

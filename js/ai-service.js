@@ -67,6 +67,7 @@ const AI_PRESETS = {
 class AiModelService {
   constructor() {
     this.storageKey = "liquid_ai_config_v1";
+    this.overviewStorageKey = "liquid_ai_daily_overview_v1";
     this.config = {
       enabled: false,
       provider: "deepseek",
@@ -74,26 +75,70 @@ class AiModelService {
       apiKey: "",
       model: "deepseek-chat"
     };
+    this.overviews = {}; // 按 `${date}_${mode}` 存储每日 AI 总览缓存
     this.isScanning = false;
+    this.isGeneratingOverview = false;
+  }
+
+  getTodayString() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
   async init() {
     try {
       if (window.chrome && chrome.storage && chrome.storage.local) {
-        const data = await chrome.storage.local.get(this.storageKey);
+        const data = await chrome.storage.local.get([this.storageKey, this.overviewStorageKey]);
         if (data && data[this.storageKey]) {
           this.config = { ...this.config, ...data[this.storageKey] };
+        }
+        if (data && data[this.overviewStorageKey]) {
+          this.overviews = data[this.overviewStorageKey] || {};
         }
       } else {
         const saved = localStorage.getItem(this.storageKey);
         if (saved) {
           this.config = { ...this.config, ...JSON.parse(saved) };
         }
+        const savedOv = localStorage.getItem(this.overviewStorageKey);
+        if (savedOv) {
+          this.overviews = JSON.parse(savedOv) || {};
+        }
       }
     } catch (e) {
       console.warn("读取 AI 配置异常:", e);
     }
     return this.config;
+  }
+
+  getCachedOverview(mode = "all") {
+    const key = `${this.getTodayString()}_${mode}`;
+    return this.overviews[key] || null;
+  }
+
+  async saveOverview(mode = "all", overviewData) {
+    const today = this.getTodayString();
+    const key = `${today}_${mode}`;
+    // 仅保留当天的缓存，避免无限膨胀
+    const nextMap = {};
+    Object.keys(this.overviews || {}).forEach(k => {
+      if (k.startsWith(today + "_")) {
+        nextMap[k] = this.overviews[k];
+      }
+    });
+    nextMap[key] = overviewData;
+    this.overviews = nextMap;
+
+    try {
+      if (window.chrome && chrome.storage && chrome.storage.local) {
+        await chrome.storage.local.set({ [this.overviewStorageKey]: this.overviews });
+      } else {
+        localStorage.setItem(this.overviewStorageKey, JSON.stringify(this.overviews));
+      }
+    } catch (e) {
+      console.warn("保存 AI 今日总览缓存失败:", e);
+    }
+    return overviewData;
   }
 
   async saveConfig(newConfig) {
@@ -283,14 +328,8 @@ class AiModelService {
     return null;
   }
 
-  // 核心方法：使用配置的大模型对单个工具进行深度扫描与中文提炼
-  async generateToolSummary(tool) {
-    if (!this.isEnabled()) {
-      throw new Error("未启用或未配置 AI 模型 API");
-    }
-
-    const endpoint = this.normalizeEndpoint(this.config.baseUrl, "/chat/completions");
-
+  // 统一构建 Chat Completions 请求头
+  buildChatHeaders() {
     const headers = {
       "Content-Type": "application/json",
       "HTTP-Referer": "https://liquid-tab.internal",
@@ -299,6 +338,17 @@ class AiModelService {
     if (this.config.apiKey) {
       headers["Authorization"] = `Bearer ${this.config.apiKey.trim()}`;
     }
+    return headers;
+  }
+
+  // 核心方法：使用配置的大模型对单个工具进行深度扫描与中文提炼
+  async generateToolSummary(tool) {
+    if (!this.isEnabled()) {
+      throw new Error("未启用或未配置 AI 模型 API");
+    }
+
+    const endpoint = this.normalizeEndpoint(this.config.baseUrl, "/chat/completions");
+    const headers = this.buildChatHeaders();
 
     const systemPrompt = `你是一位顶尖的科技产品分析专家与资深中文科技科技专栏主编。
 请根据用户提供的科技新工具信息（英文名称、原始介绍及官网链接），为中国用户生成专业、地道、极具吸引力的中文产品解析。
@@ -407,6 +457,129 @@ class AiModelService {
     }
 
     return tools;
+  }
+
+  // 按来源轮转采样多源内容，确保总览提示词覆盖全部订阅领域
+  sampleBalancedItemsForOverview(items, maxTotal = 28) {
+    if (!Array.isArray(items) || !items.length) return [];
+    const buckets = new Map();
+    items.forEach(it => {
+      const key = it.sourceType || it.sourceName || "其他";
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(it);
+    });
+
+    const sampled = [];
+    let added = true;
+    while (added && sampled.length < maxTotal) {
+      added = false;
+      for (const [, list] of buckets) {
+        if (list.length > 0 && sampled.length < maxTotal) {
+          sampled.push(list.shift());
+          added = true;
+        }
+      }
+    }
+    return sampled;
+  }
+
+  // 核心方法：对当前多源聚合内容生成「AI 跨界今日总览」
+  async generateDailyOverview(items, mode = "all") {
+    if (!this.isEnabled()) {
+      throw new Error("未启用或未配置 AI 模型 API");
+    }
+    if (!items || !items.length) {
+      throw new Error("当前列表暂无可供概括的内容");
+    }
+    if (this.isGeneratingOverview) {
+      return this.getCachedOverview(mode);
+    }
+
+    this.isGeneratingOverview = true;
+    const endpoint = this.normalizeEndpoint(this.config.baseUrl, "/chat/completions");
+    const headers = this.buildChatHeaders();
+
+    const sampled = this.sampleBalancedItemsForOverview(items, 28);
+    const sourceNames = Array.from(new Set(sampled.map(it => it.sourceType || it.sourceName).filter(Boolean)));
+    const modeLabel = mode === "news" ? "破茧跨界资讯" : (mode === "tools" ? "创新极客工具" : "综合全网动态");
+
+    const digestInput = sampled.map((it, i) => {
+      const src = it.sourceType || it.sourceName || "资讯";
+      const badge = it.badge ? `[${it.badge}]` : "";
+      const summary = (it.descZh || it.desc || "").slice(0, 85);
+      return `${i + 1}. (${src}${badge}) ${it.name} — ${summary}`;
+    }).join("\n");
+
+    const systemPrompt = `你是一位极具跨学科视野的中文主编，擅长将繁杂的多源订阅资讯浓缩成清晰、省时、有洞见的「今日总览简报」。
+用户开启了多个跨界订阅源（涵盖人文哲学、生活百科、全球视野、宏观财经、自然科学、艺术美学、科技极客与创新工具）。
+请对提供的今日「${modeLabel}」条目进行全局提炼与跨界梳理，严格输出合法 JSON（不要包含 Markdown 代码块或多余解释）：
+{
+  "headline": "今日风向一句总括（16~28字，抓人眼球且准确）",
+  "overview": "2~3句全局综合导读，点明今日多领域交汇的核心话题、社会/科技/商业趋势或思想看点",
+  "sectors": [
+    { "emoji": "🏛️", "domain": "领域归类(如 人文与社会/全球与财经/自然与美学/科技与工具)", "digest": "22~40字，精准概括该维度今日主要动态" }
+  ],
+  "topPick": "今日最值得破茧精读的 1 篇推荐（含标题关键词与推荐理由，35~60字）"
+}
+注意：sectors 数组请根据实际提供的条目生成 3~4 个最有代表性的板块，如某板块无对应条目可跳过或合并，不要虚构不存在的新闻。`;
+
+    const userPrompt = `本次覆盖订阅源 (${sourceNames.length} 个): ${sourceNames.join("、")}\n\n今日条目清单:\n${digestInput}`;
+
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30000);
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          model: this.config.model || "deepseek-chat",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          temperature: 0.45,
+          max_tokens: 900
+        }),
+        signal: ctrl.signal
+      });
+      clearTimeout(timer);
+
+      if (!res.ok) {
+        let errBody = "";
+        try { errBody = await res.text(); } catch (e) {}
+        throw new Error(`API 错误 (HTTP ${res.status}): ${errBody.slice(0, 150)}`);
+      }
+
+      const json = await res.json();
+      const content = json?.choices?.[0]?.message?.content?.trim();
+      if (!content) {
+        throw new Error("大模型未返回有效总览内容");
+      }
+
+      const parsed = this.parseAiJson(content);
+      const overviewObj = {
+        date: this.getTodayString(),
+        mode,
+        model: this.config.model || "AI",
+        generatedAt: Date.now(),
+        sourceCount: sourceNames.length,
+        itemCount: items.length,
+        headline: (parsed && parsed.headline) ? parsed.headline : `今日${modeLabel}跨界总览`,
+        overview: (parsed && parsed.overview) ? parsed.overview : content.replace(/```[a-z]*\s*/gi, "").replace(/```/g, "").slice(0, 260).trim(),
+        sectors: (parsed && Array.isArray(parsed.sectors)) ? parsed.sectors.slice(0, 4) : [],
+        topPick: (parsed && parsed.topPick) ? parsed.topPick : ""
+      };
+
+      await this.saveOverview(mode, overviewObj);
+      return overviewObj;
+    } catch (err) {
+      clearTimeout(timer);
+      console.warn("[AI Service] 生成今日总览失败:", err);
+      throw err;
+    } finally {
+      this.isGeneratingOverview = false;
+    }
   }
 }
 

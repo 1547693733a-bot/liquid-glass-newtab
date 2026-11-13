@@ -93,6 +93,7 @@ class AppController {
     window.addEventListener("dailyToolsUpdated", () => {
       this.renderTools();
       this.renderHomeWideCards();
+      this.renderAiDailyOverview(true);
     });
 
     // 监听奇趣探索更新事件
@@ -100,8 +101,9 @@ class AppController {
       this.renderTools();
     });
 
-    // 渲染首页今日更新宽卡片
+    // 渲染首页今日更新宽卡片与 AI 今日总览
     this.renderHomeWideCards();
+    this.renderAiDailyOverview(true);
 
     // 默认聚焦搜索框
     setTimeout(() => {
@@ -114,6 +116,7 @@ class AppController {
   initHomeWideSection() {
     this.homeDailyMode = "all"; // "all" | "news" | "tools"
     this.homeSelectedSource = "all";
+    this.autoOverviewTriggered = new Set();
 
     // 绑定顶部模式切换分段按钮 (🌟 综合动态 / 📰 破茧资讯 / 🛠️ 创新工具)
     const mainTabsContainer = document.getElementById("homeDailyMainTabs");
@@ -126,6 +129,7 @@ class AppController {
           this.homeSelectedSource = "all";
           this.renderHomeSubchannelPills();
           this.renderHomeWideCards();
+          this.renderAiDailyOverview(false);
         });
       });
     }
@@ -173,6 +177,42 @@ class AppController {
     if (homeAiBtn) {
       homeAiBtn.addEventListener("click", () => {
         this.triggerAiBatchScan();
+      });
+    }
+
+    // 绑定首页「AI 今日总览」与收起/展开控件
+    const ovNavBtn = document.getElementById("homeAiOverviewBtn");
+    if (ovNavBtn) {
+      ovNavBtn.addEventListener("click", () => {
+        const card = document.getElementById("aiDailyOverviewCard");
+        if (card && card.classList.contains("collapsed")) {
+          card.classList.remove("collapsed");
+          localStorage.setItem("liquid_ai_overview_collapsed", "0");
+          const tBtn = document.getElementById("toggleAiOverviewBtn");
+          if (tBtn) tBtn.textContent = "收起";
+        }
+        this.triggerAiDailyOverview(true);
+      });
+    }
+
+    const refreshOvBtn = document.getElementById("refreshAiOverviewBtn");
+    if (refreshOvBtn) {
+      refreshOvBtn.addEventListener("click", () => {
+        this.triggerAiDailyOverview(true);
+      });
+    }
+
+    const toggleOvBtn = document.getElementById("toggleAiOverviewBtn");
+    const ovCard = document.getElementById("aiDailyOverviewCard");
+    if (ovCard && localStorage.getItem("liquid_ai_overview_collapsed") === "1") {
+      ovCard.classList.add("collapsed");
+      if (toggleOvBtn) toggleOvBtn.textContent = "展开";
+    }
+    if (toggleOvBtn && ovCard) {
+      toggleOvBtn.addEventListener("click", () => {
+        const isCollapsed = ovCard.classList.toggle("collapsed");
+        localStorage.setItem("liquid_ai_overview_collapsed", isCollapsed ? "1" : "0");
+        toggleOvBtn.textContent = isCollapsed ? "展开" : "收起";
       });
     }
   }
@@ -1239,14 +1279,168 @@ class AppController {
     modal.classList.add("open");
   }
 
+  // 打开设置面板中的 AI 模型配置区
+  openAiSettingsSection(toastMsg = "请先在设置中配置并开启 AI 大模型 API") {
+    this.showToast(toastMsg);
+    const modal = document.getElementById("settingsModal");
+    if (modal) modal.classList.add("open");
+    const section = document.getElementById("settingSectionAi");
+    if (section) section.scrollIntoView({ behavior: "smooth" });
+  }
+
+  // 渲染「AI 跨界今日总览」简报卡片
+  renderAiDailyOverview(allowAuto = false) {
+    const body = document.getElementById("aiDailyOverviewBody");
+    const meta = document.getElementById("aiOverviewMeta");
+    const btnText = document.getElementById("refreshAiOverviewText");
+    if (!body) return;
+
+    const mode = this.homeDailyMode || "all";
+    const items = window.dailyToolsSyncEngine
+      ? window.dailyToolsSyncEngine.getToolsByModeAndSource(mode, "all")
+      : [];
+    const aiReady = !!(window.aiService && window.aiService.isEnabled());
+
+    if (!aiReady) {
+      if (meta) meta.textContent = "开启 AI 模型后自动生成多源简报";
+      if (btnText) btnText.textContent = "⚙️ 去配置 AI";
+      const empty = document.createElement("div");
+      empty.className = "ai-overview-empty";
+      const span = document.createElement("span");
+      span.textContent = `当前已聚合 ${items.length} 条跨界内容（人文 / 全球 / 财经 / 自然 / 艺术 / 科技），配置 AI 模型后可一键梳理 30 秒今日总览。`;
+      empty.appendChild(span);
+      body.replaceChildren(empty);
+      return;
+    }
+
+    const cached = window.aiService.getCachedOverview(mode);
+    if (cached) {
+      if (meta) {
+        meta.textContent = `${cached.date} · ${cached.model} · 汇总 ${cached.sourceCount || "多"} 个订阅源 (${cached.itemCount || items.length} 条)`;
+      }
+      if (btnText) btnText.textContent = "🔄 重新概括";
+
+      const nodes = [];
+
+      if (cached.headline) {
+        const hl = document.createElement("div");
+        hl.className = "ai-overview-headline";
+        hl.textContent = cached.headline;
+        nodes.push(hl);
+      }
+
+      if (cached.overview) {
+        const sum = document.createElement("div");
+        sum.className = "ai-overview-summary";
+        sum.textContent = cached.overview;
+        nodes.push(sum);
+      }
+
+      if (Array.isArray(cached.sectors) && cached.sectors.length > 0) {
+        const grid = document.createElement("div");
+        grid.className = "ai-overview-sectors";
+        cached.sectors.forEach(sec => {
+          const card = document.createElement("div");
+          card.className = "ai-sector-item";
+
+          const dom = document.createElement("div");
+          dom.className = "ai-sector-domain";
+          dom.textContent = `${sec.emoji || "✨"} ${sec.domain || "领域洞察"}`;
+
+          const dig = document.createElement("div");
+          dig.className = "ai-sector-digest";
+          dig.textContent = sec.digest || "";
+
+          card.appendChild(dom);
+          card.appendChild(dig);
+          grid.appendChild(card);
+        });
+        nodes.push(grid);
+      }
+
+      if (cached.topPick) {
+        const pick = document.createElement("div");
+        pick.className = "ai-overview-toppick";
+        pick.textContent = `💡 今日破茧精读推荐：${cached.topPick}`;
+        nodes.push(pick);
+      }
+
+      body.replaceChildren(...nodes);
+      return;
+    }
+
+    // 尚无今日缓存：若允许静默自动生成，且条目已加载，自动触发一次总览提炼
+    if (meta) meta.textContent = `${window.aiService.getModelName()} · 就绪`;
+    if (btnText) btnText.textContent = "✨ 生成总览";
+
+    const empty = document.createElement("div");
+    empty.className = "ai-overview-empty";
+    const span = document.createElement("span");
+    span.textContent = window.aiService.isGeneratingOverview
+      ? `✨ 正在调用 ${window.aiService.getModelName()} 梳理 ${items.length} 条多源订阅内容...`
+      : `已汇聚 ${items.length} 条跨界与科技发现，点击「✨ 生成总览」让 AI 帮您 30 秒浓缩今日重点。`;
+    empty.appendChild(span);
+    body.replaceChildren(empty);
+
+    if (allowAuto && items.length > 0 && !this.autoOverviewTriggered.has(mode) && !window.aiService.isGeneratingOverview) {
+      this.autoOverviewTriggered.add(mode);
+      this.triggerAiDailyOverview(false);
+    }
+  }
+
+  // 触发 AI 生成今日跨界总览
+  async triggerAiDailyOverview(interactive = true) {
+    if (!window.aiService || !window.aiService.isEnabled()) {
+      if (interactive) this.openAiSettingsSection();
+      return;
+    }
+
+    const mode = this.homeDailyMode || "all";
+    const items = window.dailyToolsSyncEngine
+      ? window.dailyToolsSyncEngine.getToolsByModeAndSource(mode, "all")
+      : [];
+
+    if (!items.length) {
+      if (interactive) this.showToast("当前分类暂无可概括的内容，请先点击刷新抓取新源");
+      return;
+    }
+
+    const refreshBtn = document.getElementById("refreshAiOverviewBtn");
+    const refreshText = document.getElementById("refreshAiOverviewText");
+    const navBtn = document.getElementById("homeAiOverviewBtn");
+    const navBtnText = document.getElementById("homeAiOverviewBtnText");
+    const body = document.getElementById("aiDailyOverviewBody");
+
+    if (refreshBtn) refreshBtn.disabled = true;
+    if (navBtn) navBtn.disabled = true;
+    if (refreshText) refreshText.textContent = "梳理总览中...";
+    if (navBtnText) navBtnText.textContent = "概括中...";
+
+    if (body && interactive) {
+      const loading = document.createElement("div");
+      loading.className = "ai-overview-empty";
+      loading.textContent = `✨ 正在调用 ${window.aiService.getModelName()} 纵览全部分类与订阅源，请稍候...`;
+      body.replaceChildren(loading);
+    }
+
+    try {
+      await window.aiService.generateDailyOverview(items, mode);
+      this.renderAiDailyOverview(false);
+      if (interactive) this.showToast("✨ AI 今日跨界总览已生成！");
+    } catch (err) {
+      this.renderAiDailyOverview(false);
+      if (interactive) this.showToast(`生成今日总览失败: ${err.message}`);
+    } finally {
+      if (refreshBtn) refreshBtn.disabled = false;
+      if (navBtn) navBtn.disabled = false;
+      if (navBtnText) navBtnText.textContent = "今日总览";
+    }
+  }
+
   // 批量调用大模型扫描提炼今日新发现
   async triggerAiBatchScan() {
     if (!window.aiService || !window.aiService.isEnabled()) {
-      this.showToast("请先在设置中配置并开启 AI 大模型 API");
-      const modal = document.getElementById("settingsModal");
-      if (modal) modal.classList.add("open");
-      const section = document.getElementById("settingSectionAi");
-      if (section) section.scrollIntoView({ behavior: "smooth" });
+      this.openAiSettingsSection();
       return;
     }
 
@@ -1886,6 +2080,7 @@ class AppController {
         if (window.aiService) {
           await window.aiService.saveConfig({ enabled });
         }
+        this.renderAiDailyOverview(false);
         this.showToast(enabled ? "已开启 AI 智能大模型深度概要引擎" : "已停用 AI 大模型引擎");
       });
     }
@@ -1951,6 +2146,7 @@ class AppController {
           apiKey: aiApiKey ? aiApiKey.value.trim() : "",
           model: aiModel ? aiModel.value.trim() : ""
         });
+        this.renderAiDailyOverview(false);
       }
     };
 

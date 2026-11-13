@@ -1892,6 +1892,172 @@ body {
   animation: spin 1s linear infinite;
 }
 
+.daily-tool-btn-accent {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(56, 189, 248, 0.22));
+  border-color: rgba(167, 139, 250, 0.38);
+  color: #e9d5ff;
+}
+
+.daily-tool-btn-accent:hover {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.36), rgba(56, 189, 248, 0.34));
+  border-color: rgba(192, 132, 252, 0.6);
+  color: #ffffff;
+}
+
+/* ==================== AI 跨界今日总览简报卡片 ==================== */
+.ai-overview-card {
+  margin-bottom: 18px;
+  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, rgba(139, 92, 246, 0.12), rgba(14, 165, 233, 0.08) 55%, rgba(15, 23, 42, 0.45));
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  border: 1px solid rgba(192, 132, 252, 0.26);
+  border-top-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: all var(--transition-fast);
+}
+
+.ai-overview-card.collapsed .ai-overview-body {
+  display: none;
+}
+
+.ai-overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ai-overview-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ai-overview-spark {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(56, 189, 248, 0.26));
+  border: 1px solid rgba(192, 132, 252, 0.48);
+  color: #f3e8ff;
+  letter-spacing: 0.2px;
+}
+
+.ai-overview-meta {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.ai-overview-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-ov-btn {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ai-ov-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #ffffff;
+}
+
+.ai-ov-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.ai-overview-body {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-overview-headline {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.45;
+  letter-spacing: -0.1px;
+}
+
+.ai-overview-summary {
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(235, 235, 245, 0.86);
+}
+
+.ai-overview-sectors {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.ai-sector-item {
+  padding: 10px 13px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-sector-domain {
+  font-size: 12px;
+  font-weight: 700;
+  color: #bae6fd;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ai-sector-digest {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(235, 235, 245, 0.78);
+}
+
+.ai-overview-toppick {
+  padding: 9px 13px;
+  border-radius: 10px;
+  background: rgba(251, 191, 36, 0.09);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #fef3c7;
+}
+
+.ai-overview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: rgba(235, 235, 245, 0.76);
+}
+
 /* 第 2 层：二级轻量化子分类筛选条 (不再嵌套笨重黑底胶囊) */
 .daily-subchannel-wrapper {
   margin-bottom: 16px;
