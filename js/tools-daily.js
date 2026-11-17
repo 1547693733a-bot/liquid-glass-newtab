@@ -143,7 +143,7 @@ const BUILTIN_NEWS_SOURCES = [
 
 class DailyToolsSyncEngine {
   constructor() {
-    this.storageKey = "liquid_daily_tools_cache_v10"; // 升级至 v10：跨界人文/财经/全球/自然/艺术+科技真破茧多源聚合
+    this.storageKey = "liquid_daily_tools_cache_v11"; // 升级至 v11：切换 GitHub 实时 Trending 每日热榜
     this.funStorageKey = "liquid_fun_explore_cache_v1"; // 奇趣探索独立低频更新源
     this.newsConfigKey = "liquid_news_config_v1"; // 破茧资讯源与用户自定义 RSS 订阅配置
     this.dailyTools = [];
@@ -171,7 +171,8 @@ class DailyToolsSyncEngine {
       "liquid_daily_tools_cache_v6",
       "liquid_daily_tools_cache_v7",
       "liquid_daily_tools_cache_v8",
-      "liquid_daily_tools_cache_v9"
+      "liquid_daily_tools_cache_v9",
+      "liquid_daily_tools_cache_v10"
     ];
     try {
       if (window.chrome && chrome.storage && chrome.storage.local) {
@@ -1451,11 +1452,107 @@ class DailyToolsSyncEngine {
     }
   }
 
-  // 数据源 2: GitHub 热榜开发者工具
+  // 解析 GitHub Trending HTML 页面 (https://github.com/trending)
+  parseGitHubTrendingHtml(htmlText, maxItems = 8) {
+    if (!htmlText) return [];
+    const entries = [];
+
+    if (typeof DOMParser !== "undefined") {
+      try {
+        const doc = new DOMParser().parseFromString(htmlText, "text/html");
+        const rows = Array.from(doc.querySelectorAll("article.Box-row")).slice(0, maxItems);
+        for (const row of rows) {
+          const linkEl = row.querySelector("h2 a[href]");
+          const href = (linkEl?.getAttribute("href") || "").trim();
+          const slug = href.replace(/^\//, "").trim();
+          if (!slug) continue;
+
+          const name = slug.split("/").pop() || slug;
+          const desc = (row.querySelector("p")?.textContent || "").replace(/\s+/g, " ").trim();
+          const lang = (row.querySelector('[itemprop="programmingLanguage"]')?.textContent || "").trim();
+          const totalStars = (row.querySelector('a[href$="/stargazers"]')?.textContent || "").replace(/[^\d,]/g, "").trim();
+          const rightSpan = (row.querySelector("span.float-sm-right")?.textContent || "").replace(/\s+/g, " ").trim();
+          const todayMatch = rightSpan.match(/([\d,]+)\s*stars?\s*today/i);
+          const todayStars = todayMatch ? todayMatch[1] : "";
+
+          entries.push({
+            slug,
+            name,
+            url: `https://github.com/${slug}`,
+            rawDesc: desc || "GitHub 今日热门开源项目",
+            lang,
+            totalStars,
+            todayStars
+          });
+        }
+      } catch (e) {
+        console.warn("DOMParser 解析 GitHub Trending 失败:", e);
+      }
+    }
+
+    return entries;
+  }
+
+  // 数据源 2: GitHub Trending 今日热榜 (直接同步 https://github.com/trending?since=daily，并保留近期新星 API 兜底)
   async fetchGitHubTrendingTools() {
-    const apiUrl = "https://api.github.com/search/repositories?q=topic:developer-tools+pushed:>2024-01-01&sort=stars&order=desc&per_page=6";
-    
     try {
+      const res = await fetch("https://github.com/trending?since=daily", {
+        headers: { "Accept": "text/html,application/xhtml+xml" },
+        signal: AbortSignal.timeout(7000)
+      });
+
+      if (res.ok) {
+        const htmlText = await res.text();
+        const entries = this.parseGitHubTrendingHtml(htmlText, 8);
+        if (entries.length > 0) {
+          return await Promise.all(entries.map(async (item, idx) => {
+            const descZh = await this.translateToChinese(item.rawDesc);
+            const highlights = [];
+            if (item.todayStars) {
+              highlights.push(`🔥 今日 +${item.todayStars}`);
+            } else {
+              highlights.push(`🔥 Trending #${idx + 1}`);
+            }
+            if (item.totalStars) {
+              const num = parseInt(item.totalStars.replace(/,/g, ""), 10);
+              const starText = num >= 1000 ? `${(num / 1000).toFixed(1)}k★` : `${num}★`;
+              highlights.push(`⭐ ${starText}`);
+            }
+            if (item.lang) {
+              highlights.push(`💻 ${item.lang}`);
+            }
+            if (highlights.length < 3) highlights.push("🛠️ 开源热榜");
+
+            const titleZh = this.extractChineseTitle(item.name, descZh);
+            const descLine = item.todayStars ? `${descZh} (今日 +${item.todayStars}★)` : descZh;
+
+            return {
+              id: `gh-trending-${item.slug.replace(/[^a-zA-Z0-9_-]/g, "-")}`,
+              name: item.slug,
+              titleZh: titleZh,
+              desc: descLine,
+              descZh: descZh,
+              rawDesc: item.rawDesc,
+              url: item.url,
+              category: "daily",
+              sourceType: "GitHub",
+              badge: "GitHub 热榜",
+              isDaily: true,
+              score: 100 - idx,
+              highlights: highlights.slice(0, 3),
+              pubDate: item.todayStars ? `今日 +${item.todayStars}★` : "今日热榜"
+            };
+          }));
+        }
+      }
+    } catch (e) {
+      console.warn("GitHub Trending 页面抓取异常，切换近期新星 API 兜底:", e);
+    }
+
+    // 兜底通道：近 14 天新创建的高热上升仓库（避免固定返回历史陈年老仓库）
+    try {
+      const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+      const apiUrl = `https://api.github.com/search/repositories?q=created:>${twoWeeksAgo}&sort=stars&order=desc&per_page=6`;
       const res = await fetch(apiUrl, {
         headers: { "Accept": "application/vnd.github.v3+json" },
         signal: AbortSignal.timeout(6500)
@@ -1466,20 +1563,20 @@ class DailyToolsSyncEngine {
       if (!Array.isArray(json.items)) return [];
 
       const repos = json.items.slice(0, 6);
-      const results = [];
-
-      for (const repo of repos) {
-        let rawDesc = repo.description || "热门开源实用项目";
+      return await Promise.all(repos.map(async (repo, idx) => {
+        const rawDesc = repo.description || "近期热门上升开源项目";
         const descZh = await this.translateToChinese(rawDesc);
-        const starsCount = (repo.stargazers_count / 1000).toFixed(1);
-        const highlights = ["⭐ " + starsCount + "k★", "💻 优质开源", "🛠️ 极客神器"];
+        const starText = repo.stargazers_count >= 1000
+          ? `${(repo.stargazers_count / 1000).toFixed(1)}k★`
+          : `${repo.stargazers_count}★`;
+        const highlights = [`⭐ ${starText}`, repo.language ? `💻 ${repo.language}` : "💻 近期新星", "🛠️ 开源热榜"];
         const titleZh = this.extractChineseTitle(repo.name, descZh);
 
-        results.push({
+        return {
           id: `gh-${repo.id}`,
-          name: repo.name,
+          name: repo.full_name || repo.name,
           titleZh: titleZh,
-          desc: `${descZh} (${starsCount}k★)`,
+          desc: `${descZh} (${starText})`,
           descZh: descZh,
           rawDesc: rawDesc,
           url: repo.html_url,
@@ -1487,14 +1584,13 @@ class DailyToolsSyncEngine {
           sourceType: "GitHub",
           badge: "GitHub 热榜",
           isDaily: true,
-          highlights: highlights,
-          pubDate: "活跃更新"
-        });
-      }
-
-      return results;
+          score: 90 - idx,
+          highlights: highlights.slice(0, 3),
+          pubDate: "近期热榜"
+        };
+      }));
     } catch (e) {
-      console.warn("GitHub API 源异常:", e);
+      console.warn("GitHub API 兜底源异常:", e);
       return [];
     }
   }
