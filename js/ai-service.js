@@ -77,7 +77,16 @@ class AiModelService {
     };
     this.overviews = {}; // 按 `${date}_${mode}` 存储每日 AI 总览缓存
     this.isScanning = false;
+    this.activeScanPromise = null;
+    this.scanListeners = new Set();
+    this.scanProgress = { completed: 0, total: 0, succeeded: 0, failed: 0, lastError: "" };
     this.isGeneratingOverview = false;
+  }
+
+  subscribeScanProgress(listener) {
+    if (typeof listener !== "function") return () => {};
+    this.scanListeners.add(listener);
+    return () => this.scanListeners.delete(listener);
   }
 
   getTodayString() {
@@ -350,22 +359,34 @@ class AiModelService {
     const endpoint = this.normalizeEndpoint(this.config.baseUrl, "/chat/completions");
     const headers = this.buildChatHeaders();
 
-    const systemPrompt = `你是一位顶尖的科技产品分析专家与资深中文科技科技专栏主编。
-请根据用户提供的科技新工具信息（英文名称、原始介绍及官网链接），为中国用户生成专业、地道、极具吸引力的中文产品解析。
+    const isArticle = !!(tool.isNews || tool.itemType === "news");
+    const systemPrompt = isArticle
+      ? `你是一位极具跨学科洞察力的资深中文主编，擅长将科技、人文、财经、全球时事与自然美学长文浓缩为直击本质的中文导读。
+请根据用户提供的文章/资讯信息，提炼专业、通顺、高信噪比的中文解读。
 
 请严格输出合法的 JSON 格式，绝不要添加任何额外的代码块标记、思考过程或多余文字，结构如下：
 {
-  "titleZh": "中文定位副标题（6~10字以内，如：AI 创客增长副驾、实时对话转结构化引擎）",
+  "titleZh": "媒体来源或文章核心议题短标（6~10字以内）",
+  "summary": "2~3句精炼地道的中文核心提要（概括文章的核心论点、关键事实或独特思考视角，让人快速看懂价值）",
+  "highlights": ["3个核心看点短标签数组，包含对应Emoji，如：💡 核心洞察, 🌍 跨界视角, 📖 深度长文"]
+}`
+      : `你是一位顶尖的科技产品与开源项目分析专家。
+请根据用户提供的新产品或 GitHub 开源项目信息（名称、原始简介、README 精华、最新版本与链接），生成专业、地道、直击痛点的中文产品解析。
+
+请严格输出合法的 JSON 格式，绝不要添加任何额外的代码块标记、思考过程或多余文字，结构如下：
+{
+  "titleZh": "中文定位副标题（6~10字以内，如：AI 创客增长副驾、开源自动化测试代理）",
   "summary": "2~3句精炼地道的中文功能与核心应用场景详解（说明解决什么痛点、核心功能亮点、适合什么用户群体，文笔通畅自然）",
-  "highlights": ["3个核心亮点短标签数组，包含对应Emoji，如：🤖 AI 智能副驾, 🚀 商业出海, ⚡ MCP 自动化"]
+  "highlights": ["3个核心亮点短标签数组，包含对应Emoji，如：🤖 AI 智能副驾, 🚀 开源神器, ⚡ 效率提升"]
 }`;
 
     const extraContext = [
+      tool.sourceName || tool.sourceType ? `来源: ${tool.sourceName || tool.sourceType}` : "",
       tool.latestRelease ? `最新版本: ${tool.latestRelease}` : "",
       tool.readmeSnippet ? `README 精华: ${tool.readmeSnippet}` : ""
     ].filter(Boolean).join("\n");
 
-    const userPrompt = `产品名称: ${tool.name}\n原始简介: ${tool.rawDesc || tool.desc}${extraContext ? "\n" + extraContext : ""}\n官网链接: ${tool.url}`;
+    const userPrompt = `名称: ${tool.name}\n原始简介: ${tool.rawDesc || tool.desc}${extraContext ? "\n" + extraContext : ""}\n官网链接: ${tool.url}`;
 
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 20000);
@@ -421,47 +442,113 @@ class AiModelService {
     }
   }
 
-  // 批量并发扫描工具列表
-  async batchScanDailyTools(tools, onProgress = null) {
-    if (!this.isEnabled() || !tools || !tools.length) return tools;
-    if (this.isScanning) return tools;
-    this.isScanning = true;
-
-    try {
-      const targetTools = tools.filter(t => t.category === "daily" || t.isDaily);
-      const total = targetTools.length;
-      let completed = 0;
-
-      // 每次并发 2 个，兼顾速度与 API 频率限制
-      const concurrency = 2;
-      for (let i = 0; i < targetTools.length; i += concurrency) {
-        const batch = targetTools.slice(i, i + concurrency);
-        await Promise.allSettled(
-          batch.map(async (tool) => {
-            try {
-              const aiResult = await this.generateToolSummary(tool);
-              if (aiResult && aiResult.summary) {
-                tool.descZh = aiResult.summary;
-                tool.desc = aiResult.summary;
-                if (aiResult.titleZh) tool.titleZh = aiResult.titleZh;
-                if (aiResult.highlights && aiResult.highlights.length) tool.highlights = aiResult.highlights;
-                tool.aiGenerated = true;
-                tool.aiModel = this.config.model || "AI";
-              }
-            } catch (e) {
-              console.warn(`[AI Service] 单条「${tool.name}」扫描跳过:`, e.message);
-            } finally {
-              completed++;
-              if (onProgress) onProgress(completed, total, tool);
-            }
-          })
-        );
-      }
-    } finally {
-      this.isScanning = false;
+  // 批量并发扫描工具与资讯列表（支持进度回调、增量落盘、复用进行中任务及真实结果统计）
+  async batchScanDailyTools(tools, optionsOrCallback = null) {
+    if (!this.isEnabled()) {
+      return { total: 0, completed: 0, succeeded: 0, failed: 0, lastError: "未启用 AI 模型 API", skipped: true };
+    }
+    if (!tools || !tools.length) {
+      return { total: 0, completed: 0, succeeded: 0, failed: 0, lastError: "", empty: true };
     }
 
-    return tools;
+    const opts = typeof optionsOrCallback === "function"
+      ? { onProgress: optionsOrCallback }
+      : (optionsOrCallback || {});
+    const onProgress = typeof opts.onProgress === "function" ? opts.onProgress : null;
+    const onBatchComplete = typeof opts.onBatchComplete === "function" ? opts.onBatchComplete : null;
+    const forceRescan = !!opts.forceRescan;
+
+    // 若后台自动提炼已在运行中，不静默返回，而是挂载进度监听并等待其完成
+    if (this.isScanning && this.activeScanPromise) {
+      const unsub = onProgress ? this.subscribeScanProgress((p) => onProgress(p.completed, p.total, p)) : () => {};
+      try {
+        if (onProgress && this.scanProgress.total > 0) {
+          onProgress(this.scanProgress.completed, this.scanProgress.total, this.scanProgress);
+        }
+        const runningRes = await this.activeScanPromise;
+        return { ...runningRes, attachedToRunning: true };
+      } finally {
+        unsub();
+      }
+    }
+
+    const dailyCandidates = tools.filter(t => t.category === "daily" || t.isDaily);
+    const targetTools = forceRescan
+      ? dailyCandidates
+      : dailyCandidates.filter(t => !t.aiGenerated);
+
+    if (!targetTools.length) {
+      return { total: 0, completed: 0, succeeded: 0, failed: 0, lastError: "", allAlreadyScanned: true };
+    }
+
+    this.isScanning = true;
+    const stats = {
+      total: targetTools.length,
+      completed: 0,
+      succeeded: 0,
+      failed: 0,
+      lastError: ""
+    };
+    this.scanProgress = { ...stats };
+
+    const notifyProgress = (tool) => {
+      this.scanProgress = { ...stats };
+      if (onProgress) {
+        try { onProgress(stats.completed, stats.total, tool, stats); } catch (e) {}
+      }
+      this.scanListeners.forEach(fn => {
+        try { fn(this.scanProgress, tool); } catch (e) {}
+      });
+    };
+
+    const runScan = async () => {
+      try {
+        // 每次并发 4 个，兼顾提炼速度与聚合网关速率限制
+        const concurrency = 4;
+        for (let i = 0; i < targetTools.length; i += concurrency) {
+          const batch = targetTools.slice(i, i + concurrency);
+          let batchSucceeded = 0;
+          await Promise.allSettled(
+            batch.map(async (tool) => {
+              try {
+                const aiResult = await this.generateToolSummary(tool);
+                if (aiResult && aiResult.summary) {
+                  tool.descZh = aiResult.summary;
+                  tool.desc = aiResult.summary;
+                  if (aiResult.titleZh) tool.titleZh = aiResult.titleZh;
+                  if (aiResult.highlights && aiResult.highlights.length) tool.highlights = aiResult.highlights;
+                  tool.aiGenerated = true;
+                  tool.aiModel = this.config.model || "AI";
+                  stats.succeeded++;
+                  batchSucceeded++;
+                } else {
+                  stats.failed++;
+                  stats.lastError = "模型返回空摘要";
+                }
+              } catch (e) {
+                stats.failed++;
+                stats.lastError = e.message || "请求失败";
+                console.warn(`[AI Service] 单条「${tool.name}」扫描跳过:`, e.message);
+              } finally {
+                stats.completed++;
+                notifyProgress(tool);
+              }
+            })
+          );
+
+          if (batchSucceeded > 0 && onBatchComplete) {
+            try { await onBatchComplete({ ...stats }); } catch (e) {}
+          }
+        }
+      } finally {
+        this.isScanning = false;
+        this.activeScanPromise = null;
+      }
+      return { ...stats };
+    };
+
+    this.activeScanPromise = runScan();
+    return await this.activeScanPromise;
   }
 
   // 按来源轮转采样多源内容，确保总览提示词覆盖全部订阅领域

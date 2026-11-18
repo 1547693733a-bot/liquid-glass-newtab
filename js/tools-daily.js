@@ -357,22 +357,33 @@ class DailyToolsSyncEngine {
       }
     }
 
-    // 若开启了 AI，在后台对尚未生成 AI 概要的条目执行深度提炼
-    if (window.aiService && window.aiService.isEnabled()) {
-      const unscanned = this.dailyTools.filter(t => !t.aiGenerated);
-      if (unscanned.length > 0) {
-        try {
-          await window.aiService.batchScanDailyTools(unscanned);
-          hasUpdate = true;
-        } catch (e) {
-          console.warn("后台 AI 增量扫描提炼跳过:", e);
-        }
-      }
-    }
+    // 后台非阻塞触发 AI 增量深度提炼（每完成 1 批立即落盘并通知界面刷新）
+    this.runBackgroundAiEnrichment();
 
     if (hasUpdate) {
       await this.saveToCache();
     }
+  }
+
+  // 非阻塞后台 AI 自动增量提炼（每日自动刷新或增量补全时自动执行）
+  runBackgroundAiEnrichment() {
+    if (!window.aiService || !window.aiService.isEnabled()) return;
+    const unscanned = (this.dailyTools || []).filter(t => !t.aiGenerated);
+    if (!unscanned.length) return;
+
+    window.aiService.batchScanDailyTools(this.dailyTools, {
+      onBatchComplete: async () => {
+        await this.saveToCache();
+        window.dispatchEvent(new CustomEvent("dailyToolsUpdated"));
+      }
+    }).then(async (stats) => {
+      if (stats && stats.succeeded > 0) {
+        await this.saveToCache();
+        window.dispatchEvent(new CustomEvent("dailyToolsUpdated"));
+      }
+    }).catch(e => {
+      console.warn("后台 AI 自动提炼跳过:", e);
+    });
   }
 
   async loadFromCache() {
@@ -918,21 +929,37 @@ class DailyToolsSyncEngine {
       }
 
       if (aggregated.length > 0) {
+        // 保留同一 URL 已生成的 AI 深度提炼成果，避免重复消耗额度
+        const prevAiByUrl = new Map();
+        (this.dailyTools || []).forEach(old => {
+          if (old && old.url && old.aiGenerated) {
+            prevAiByUrl.set(old.url, old);
+          }
+        });
+
+        aggregated.forEach(item => {
+          const prev = item.url ? prevAiByUrl.get(item.url) : null;
+          if (prev) {
+            item.descZh = prev.descZh;
+            item.desc = prev.desc;
+            if (prev.titleZh) item.titleZh = prev.titleZh;
+            if (prev.highlights && prev.highlights.length) item.highlights = prev.highlights;
+            item.aiGenerated = true;
+            item.aiModel = prev.aiModel || "AI";
+          }
+        });
+
         // 使用多源穿插打散算法重排，确保前排包罗万象
         this.dailyTools = this.interleaveAndDiversifyDaily(aggregated, "all");
         this.lastSyncTime = Date.now();
         this.cachedDate = this.getTodayDateString();
 
-        // 若用户已开启 AI 大模型接口，自动让 AI 扫描提炼未生成概要的项目
-        if (window.aiService && window.aiService.isEnabled()) {
-          try {
-            await window.aiService.batchScanDailyTools(this.dailyTools);
-          } catch (aiErr) {
-            console.warn("AI 自动扫描新发现异常:", aiErr);
-          }
-        }
-
+        // 1. 立即保存最新抓取结果并让界面先渲染，不再被几十次 AI 请求卡死
         await this.saveToCache();
+        window.dispatchEvent(new CustomEvent("dailyToolsUpdated"));
+
+        // 2. 若用户已开启 AI 大模型接口，后台非阻塞自动对新内容做增量提炼并实时更新卡片
+        this.runBackgroundAiEnrichment();
       }
     } catch (err) {
       console.warn("同步每日多源发现失败:", err);

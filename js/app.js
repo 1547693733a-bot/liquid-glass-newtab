@@ -1437,7 +1437,7 @@ class AppController {
     }
   }
 
-  // 批量调用大模型扫描提炼今日新发现
+  // 批量调用大模型扫描提炼今日新发现（优先处理当前筛选视图下未提炼内容，实时增量更新并真实汇报成功/失败）
   async triggerAiBatchScan() {
     if (!window.aiService || !window.aiService.isEnabled()) {
       this.openAiSettingsSection();
@@ -1458,20 +1458,64 @@ class AppController {
     if (homeAiText) homeAiText.textContent = "AI 提炼中...";
     if (toolsText) toolsText.textContent = "AI 提炼中...";
 
-    this.showToast(`✨ 开始调用 ${window.aiService.getModelName()} 深度提炼今日新发现...`);
-
     try {
-      const dailyTools = window.dailyToolsSyncEngine.dailyTools;
-      await window.aiService.batchScanDailyTools(dailyTools, (completed, total) => {
-        if (scanText) scanText.textContent = `扫描中 (${completed}/${total})`;
-        if (homeAiText) homeAiText.textContent = `提炼中 (${completed}/${total})`;
-        if (toolsText) toolsText.textContent = `AI提炼 (${completed}/${total})`;
+      const engine = window.dailyToolsSyncEngine;
+      const allDaily = engine ? (engine.dailyTools || []) : [];
+
+      // 若用户在特定来源/分类标签下点击提炼，优先提炼当前所选分类，反馈更快
+      const mode = this.homeDailyMode || "all";
+      const source = this.homeSelectedSource || "all";
+      let scopedTools = allDaily;
+      if (engine && (mode !== "all" || source !== "all")) {
+        if (source === "news_all") {
+          scopedTools = engine.getToolsByModeAndSource("news", "all");
+        } else {
+          scopedTools = engine.getToolsByModeAndSource(mode, source);
+        }
+      }
+      if (!scopedTools.length) scopedTools = allDaily;
+
+      const unscannedCount = scopedTools.filter(t => !t.aiGenerated).length;
+      const forceRescan = unscannedCount === 0 && !window.aiService.isScanning;
+
+      if (window.aiService.isScanning) {
+        this.showToast(`✨ 后台已有 AI 自动提炼任务在运行，已为您同步实时进度...`);
+      } else if (forceRescan) {
+        this.showToast(`✨ 当前分类均已提炼过，正在使用 ${window.aiService.getModelName()} 重新深度提炼 (${scopedTools.length} 条)...`);
+      } else {
+        this.showToast(`✨ 开始调用 ${window.aiService.getModelName()} 提炼剩余 ${unscannedCount} 条未解析内容...`);
+      }
+
+      const stats = await window.aiService.batchScanDailyTools(scopedTools, {
+        forceRescan,
+        onProgress: (completed, total) => {
+          if (scanText) scanText.textContent = `扫描中 (${completed}/${total})`;
+          if (homeAiText) homeAiText.textContent = `提炼中 (${completed}/${total})`;
+          if (toolsText) toolsText.textContent = `AI提炼 (${completed}/${total})`;
+        },
+        onBatchComplete: async () => {
+          if (engine) await engine.saveToCache();
+          this.renderHomeWideCards();
+        }
       });
 
-      await window.dailyToolsSyncEngine.saveToCache();
+      if (engine) await engine.saveToCache();
       this.renderTools();
       this.renderHomeWideCards();
-      this.showToast(`🎉 成功完成全部 ${dailyTools.length} 款新发现工具的 AI 深度概要提炼！`);
+
+      if (stats && stats.skipped) {
+        this.openAiSettingsSection();
+      } else if (stats && stats.succeeded > 0 && stats.failed === 0) {
+        this.showToast(`🎉 AI 深度提炼完成！本次成功提炼 ${stats.succeeded} 条内容`);
+      } else if (stats && stats.succeeded > 0 && stats.failed > 0) {
+        this.showToast(`✨ 本次提炼成功 ${stats.succeeded} 条，另有 ${stats.failed} 条失败 (${stats.lastError})`);
+      } else if (stats && stats.failed > 0) {
+        this.showToast(`⚠️ AI 提炼失败 (${stats.lastError || "接口请求异常"})，请检查设置中的 API Key 与模型名`);
+      } else if (stats && stats.allAlreadyScanned) {
+        this.showToast("✨ 全部内容均已完成 AI 提炼");
+      } else {
+        this.showToast("当前暂无可提炼的新内容");
+      }
     } catch (err) {
       this.showToast(`AI 扫描提炼异常: ${err.message}`);
     } finally {
@@ -1479,7 +1523,7 @@ class AppController {
       if (homeAiBtn) homeAiBtn.disabled = false;
       if (toolsBtn) toolsBtn.disabled = false;
       if (scanText) scanText.textContent = "立即深度扫描今日发现";
-      if (homeAiText) homeAiText.textContent = "AI 深度提炼";
+      if (homeAiText) homeAiText.textContent = "AI提炼";
       if (toolsText) toolsText.textContent = "AI 深度扫描";
     }
   }
