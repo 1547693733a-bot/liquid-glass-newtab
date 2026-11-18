@@ -360,7 +360,12 @@ class AiModelService {
   "highlights": ["3个核心亮点短标签数组，包含对应Emoji，如：🤖 AI 智能副驾, 🚀 商业出海, ⚡ MCP 自动化"]
 }`;
 
-    const userPrompt = `产品名称: ${tool.name}\n原始简介: ${tool.rawDesc || tool.desc}\n官网链接: ${tool.url}`;
+    const extraContext = [
+      tool.latestRelease ? `最新版本: ${tool.latestRelease}` : "",
+      tool.readmeSnippet ? `README 精华: ${tool.readmeSnippet}` : ""
+    ].filter(Boolean).join("\n");
+
+    const userPrompt = `产品名称: ${tool.name}\n原始简介: ${tool.rawDesc || tool.desc}${extraContext ? "\n" + extraContext : ""}\n官网链接: ${tool.url}`;
 
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 20000);
