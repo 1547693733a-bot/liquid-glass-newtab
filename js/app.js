@@ -217,7 +217,7 @@ class AppController {
     }
   }
 
-  // 动态渲染首页子来源 Pills (根据当前模式呈现)
+  // 动态渲染首页子来源 Pills (极简光学液态玻璃 + 柔和色点)
   renderHomeSubchannelPills() {
     const pillsContainer = document.getElementById("homeSourcePills");
     if (!pillsContainer) return;
@@ -229,34 +229,34 @@ class AppController {
 
     if (mode === "all") {
       pillsData = [
-        { source: "all", label: "🌟 综合全部", active: this.homeSelectedSource === "all" },
-        { source: "news_all", label: "📰 破茧资讯", iconClass: "aihot-icon", iconText: "📰", active: this.homeSelectedSource === "news_all", isNews: true },
-        { source: "知乎日报", label: "知乎日报", iconClass: "zhihu-icon", iconText: "知", active: this.homeSelectedSource === "知乎日报", isNews: true, domainStyle: "humanities" },
-        { source: "Aeon 人文", label: "Aeon 人文", iconClass: "aeon-icon", iconText: "Æ", active: this.homeSelectedSource === "Aeon 人文", isNews: true, domainStyle: "humanities" },
-        { source: "FT中文网", label: "FT中文网", iconClass: "ft-icon", iconText: "FT", active: this.homeSelectedSource === "FT中文网", isNews: true, domainStyle: "finance" },
-        { source: "BBC 中文", label: "BBC 中文", iconClass: "bbc-icon", iconText: "🌍", active: this.homeSelectedSource === "BBC 中文", isNews: true, domainStyle: "world" },
-        { source: "自然科学", label: "自然科学", iconClass: "science-icon", iconText: "🧬", active: this.homeSelectedSource === "自然科学", isNews: true, domainStyle: "science" },
-        { source: "艺术美学", label: "艺术美学", iconClass: "art-icon", iconText: "🎨", active: this.homeSelectedSource === "艺术美学", isNews: true, domainStyle: "art" },
-        { source: "Product Hunt", label: "PH 新品", iconClass: "ph-icon", iconText: "P", active: this.homeSelectedSource === "Product Hunt" },
-        { source: "GitHub", label: "GitHub 热榜", iconClass: "gh-icon", iconText: "★", active: this.homeSelectedSource === "GitHub" },
-        { source: "Solidot", label: "Solidot", iconClass: "solidot-icon", iconText: "🔬", active: this.homeSelectedSource === "Solidot", isNews: true },
-        { source: "少数派", label: "少数派", iconClass: "sspai-icon", iconText: "π", active: this.homeSelectedSource === "少数派", isNews: true }
+        { source: "all", label: "全部", active: this.homeSelectedSource === "all" },
+        { source: "news_all", label: "跨界资讯", active: this.homeSelectedSource === "news_all", isNews: true, domainStyle: "tech" },
+        { source: "知乎日报", label: "知乎日报", active: this.homeSelectedSource === "知乎日报", isNews: true, domainStyle: "humanities" },
+        { source: "Aeon 人文", label: "Aeon 人文", active: this.homeSelectedSource === "Aeon 人文", isNews: true, domainStyle: "humanities" },
+        { source: "FT中文网", label: "FT中文网", active: this.homeSelectedSource === "FT中文网", isNews: true, domainStyle: "finance" },
+        { source: "BBC 中文", label: "BBC 中文", active: this.homeSelectedSource === "BBC 中文", isNews: true, domainStyle: "world" },
+        { source: "自然科学", label: "自然科学", active: this.homeSelectedSource === "自然科学", isNews: true, domainStyle: "science" },
+        { source: "艺术美学", label: "艺术美学", active: this.homeSelectedSource === "艺术美学", isNews: true, domainStyle: "art" },
+        { source: "Product Hunt", label: "Product Hunt", active: this.homeSelectedSource === "Product Hunt", domainStyle: "tools" },
+        { source: "GitHub", label: "GitHub", active: this.homeSelectedSource === "GitHub", domainStyle: "tools" },
+        { source: "Solidot", label: "Solidot", active: this.homeSelectedSource === "Solidot", isNews: true, domainStyle: "tech" },
+        { source: "少数派", label: "少数派", active: this.homeSelectedSource === "少数派", isNews: true, domainStyle: "tech" }
       ];
     } else if (mode === "news") {
       pillsData = [
-        { source: "all", label: "🌐 全部跨界资讯", active: this.homeSelectedSource === "all" },
-        { source: "知乎日报", label: "知乎日报", iconClass: "zhihu-icon", iconText: "知", active: this.homeSelectedSource === "知乎日报", isNews: true, domainStyle: "humanities" },
-        { source: "Aeon 人文", label: "Aeon 人文", iconClass: "aeon-icon", iconText: "Æ", active: this.homeSelectedSource === "Aeon 人文", isNews: true, domainStyle: "humanities" },
-        { source: "BBC 中文", label: "BBC 中文", iconClass: "bbc-icon", iconText: "🌍", active: this.homeSelectedSource === "BBC 中文", isNews: true, domainStyle: "world" },
-        { source: "FT中文网", label: "FT中文网", iconClass: "ft-icon", iconText: "FT", active: this.homeSelectedSource === "FT中文网", isNews: true, domainStyle: "finance" },
-        { source: "自然科学", label: "自然科学", iconClass: "science-icon", iconText: "🧬", active: this.homeSelectedSource === "自然科学", isNews: true, domainStyle: "science" },
-        { source: "艺术美学", label: "艺术美学", iconClass: "art-icon", iconText: "🎨", active: this.homeSelectedSource === "艺术美学", isNews: true, domainStyle: "art" },
-        { source: "Solidot", label: "Solidot 奇客", iconClass: "solidot-icon", iconText: "🔬", active: this.homeSelectedSource === "Solidot", isNews: true },
-        { source: "阮一峰周刊", label: "阮一峰周刊", iconClass: "ruan-icon", iconText: "📖", active: this.homeSelectedSource === "阮一峰周刊", isNews: true },
-        { source: "少数派", label: "少数派", iconClass: "sspai-icon", iconText: "π", active: this.homeSelectedSource === "少数派", isNews: true },
-        { source: "极客公园", label: "极客公园", iconClass: "geek-icon", iconText: "🚀", active: this.homeSelectedSource === "极客公园", isNews: true },
-        { source: "Hacker News", label: "Hacker News", iconClass: "hn-icon", iconText: "Y", active: this.homeSelectedSource === "Hacker News", isNews: true },
-        { source: "AIHot", label: "AIHot", iconClass: "aihot-icon", iconText: "🤖", active: this.homeSelectedSource === "AIHot", isNews: true }
+        { source: "all", label: "全部资讯", active: this.homeSelectedSource === "all" },
+        { source: "知乎日报", label: "知乎日报", active: this.homeSelectedSource === "知乎日报", isNews: true, domainStyle: "humanities" },
+        { source: "Aeon 人文", label: "Aeon 人文", active: this.homeSelectedSource === "Aeon 人文", isNews: true, domainStyle: "humanities" },
+        { source: "BBC 中文", label: "BBC 中文", active: this.homeSelectedSource === "BBC 中文", isNews: true, domainStyle: "world" },
+        { source: "FT中文网", label: "FT中文网", active: this.homeSelectedSource === "FT中文网", isNews: true, domainStyle: "finance" },
+        { source: "自然科学", label: "自然科学", active: this.homeSelectedSource === "自然科学", isNews: true, domainStyle: "science" },
+        { source: "艺术美学", label: "艺术美学", active: this.homeSelectedSource === "艺术美学", isNews: true, domainStyle: "art" },
+        { source: "Solidot", label: "Solidot", active: this.homeSelectedSource === "Solidot", isNews: true, domainStyle: "tech" },
+        { source: "阮一峰周刊", label: "阮一峰周刊", active: this.homeSelectedSource === "阮一峰周刊", isNews: true, domainStyle: "tech" },
+        { source: "少数派", label: "少数派", active: this.homeSelectedSource === "少数派", isNews: true, domainStyle: "tech" },
+        { source: "极客公园", label: "极客公园", active: this.homeSelectedSource === "极客公园", isNews: true, domainStyle: "tech" },
+        { source: "Hacker News", label: "Hacker News", active: this.homeSelectedSource === "Hacker News", isNews: true, domainStyle: "tech" },
+        { source: "AIHot", label: "AIHot", active: this.homeSelectedSource === "AIHot", isNews: true, domainStyle: "tech" }
       ];
 
       // 添加已启用的自定义 RSS 订阅源 Pills
@@ -266,21 +266,20 @@ class AppController {
             pillsData.push({
               source: feed.name,
               label: feed.name,
-              iconClass: "custom-icon",
-              iconText: "📡",
               active: this.homeSelectedSource === feed.name,
-              isNews: true
+              isNews: true,
+              domainStyle: "tech"
             });
           }
         });
       }
     } else if (mode === "tools") {
       pillsData = [
-        { source: "all", label: "🛠️ 全部工具", active: this.homeSelectedSource === "all" },
-        { source: "Product Hunt", label: "Product Hunt 新品", iconClass: "ph-icon", iconText: "P", active: this.homeSelectedSource === "Product Hunt" },
-        { source: "GitHub", label: "GitHub 极客开源", iconClass: "gh-icon", iconText: "★", active: this.homeSelectedSource === "GitHub" },
-        { source: "Hacker News", label: "Show HN 独立创造", iconClass: "hn-icon", iconText: "Y", active: this.homeSelectedSource === "Hacker News" },
-        { source: "V2EX", label: "V2EX 创想工坊", iconClass: "v2-icon", iconText: "V", active: this.homeSelectedSource === "V2EX" }
+        { source: "all", label: "全部工具", active: this.homeSelectedSource === "all" },
+        { source: "Product Hunt", label: "Product Hunt", active: this.homeSelectedSource === "Product Hunt", domainStyle: "tools" },
+        { source: "GitHub", label: "GitHub Trending", active: this.homeSelectedSource === "GitHub", domainStyle: "tools" },
+        { source: "Hacker News", label: "Show HN", active: this.homeSelectedSource === "Hacker News", domainStyle: "tools" },
+        { source: "V2EX", label: "V2EX 创想", active: this.homeSelectedSource === "V2EX", domainStyle: "tools" }
       ];
     }
 
@@ -290,15 +289,8 @@ class AppController {
       btn.className = `source-pill ${p.active ? "active" : ""} ${p.isNews ? "source-pill-news" : ""} ${domainCls}`.trim();
       btn.dataset.source = p.source;
 
-      let iconHtml = "";
-      if (p.iconClass) {
-        iconHtml = `<span class="source-pill-icon ${p.iconClass}">${p.iconText || ""}</span>`;
-      }
-
-      btn.innerHTML = `
-        ${iconHtml}
-        <span>${p.label}</span>
-      `;
+      const dotHtml = p.domainStyle ? `<span class="source-pill-dot dot-${p.domainStyle}"></span>` : "";
+      btn.innerHTML = `${dotHtml}<span>${p.label}</span>`;
 
       btn.addEventListener("click", () => {
         pillsContainer.querySelectorAll(".source-pill").forEach(el => el.classList.remove("active"));
@@ -358,7 +350,8 @@ class AppController {
     }
 
     const cards = [];
-    const fallbackIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%235ac8fa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20'/%3E%3Cpath d='M2 12h20'/%3E%3C/svg%3E";
+    const fallbackIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='0.75' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20'/%3E%3Cpath d='M2 12h20'/%3E%3C/svg%3E";
+    const stripLeadingEmoji = (str) => String(str || "").replace(/^[\u{1F1E0}-\u{1F1FF}\u{1F300}-\u{1FAFF}\u2600-\u27BF\uFE0F\u200D⭐★✦✨🔥💡🚀⚡💻🛠️🤖📚🌍📈🧬🎨📖🎙️🔗🕒📱🌱🌐🔭🌈📡\s]+/u, "").trim();
 
     list.forEach(tool => {
       const card = document.createElement("div");
@@ -367,54 +360,44 @@ class AppController {
       const isSaved = window.archiveManager ? window.archiveManager.isSaved(tool.url) : false;
       const isNewsItem = tool.isNews || tool.itemType === "news" || tool.sourceType === "AIHot";
 
-      // ================= 资讯源排版模式 (跨界人文/全球/财经/自然/艺术 + 科技破茧资讯) =================
+      // ================= 资讯源排版模式 (克制编辑风液态玻璃卡片) =================
       if (isNewsItem) {
         card.className = "wide-news-card";
-        const mediaSource = tool.sourceName || tool.titleZh || "独家来源";
-        const domainBadgeMeta = {
-          humanities: { cls: "domain-humanities", emoji: "🏛️" },
-          world: { cls: "domain-world", emoji: "🌍" },
-          finance: { cls: "domain-finance", emoji: "📈" },
-          science: { cls: "domain-science", emoji: "🧬" },
-          art: { cls: "domain-art", emoji: "🎨" },
-          tech: { cls: "domain-tech", emoji: "📰" }
-        };
-        const dMeta = domainBadgeMeta[tool.domainStyle] || domainBadgeMeta.tech;
-        const reasonHtml = tool.reason ? `
-          <div class="news-card-reason">
-            <span class="reason-label">💡 推荐看点</span>
-            <span>${tool.reason}</span>
-          </div>
-        ` : "";
-        const tagsHtml = (tool.highlights || []).slice(0, 3).map(h => `<span class="news-tag-chip">${h}</span>`).join("");
+        const mediaSource = tool.sourceName || tool.titleZh || tool.sourceType || "资讯";
+        const domainCls = tool.domainStyle ? `domain-${tool.domainStyle}` : "domain-tech";
+        const tagsHtml = (tool.highlights || [])
+          .slice(0, 2)
+          .map(h => stripLeadingEmoji(h))
+          .filter(Boolean)
+          .map(h => `<span class="news-tag-chip">${h}</span>`)
+          .join("");
 
         card.innerHTML = `
           <div class="news-card-top">
             <div class="news-card-meta-left">
-              <span class="news-type-badge ${dMeta.cls}">${dMeta.emoji} ${tool.badge || "前沿资讯"}</span>
-              <span class="news-origin-pill">🎙️ ${mediaSource}</span>
+              <span class="news-type-badge ${domainCls}">${tool.badge || "资讯"}</span>
+              <span class="news-origin-pill">${mediaSource}</span>
+              ${tool.aiGenerated ? `<span class="card-ai-badge">AI 摘要</span>` : ""}
             </div>
             <div class="news-card-meta-right">
-              ${tool.score ? `<span class="news-heat-badge">🔥 热度 ${tool.score}</span>` : ""}
-              <span>🕒 ${tool.pubDate || "今日"}</span>
+              <span>${tool.pubDate || "今日"}</span>
             </div>
           </div>
           <h3 class="news-card-headline">${tool.name}</h3>
           <div class="news-card-summary" title="${tool.descZh || tool.desc}">
             ${tool.descZh || tool.desc}
           </div>
-          ${reasonHtml}
           <div class="news-card-footer">
             <div class="news-card-tags">
-              <span class="news-tag-chip" style="color: var(--accent-cyan); font-weight: 500;">🔗 ${domain}</span>
+              <span class="news-tag-chip">${domain}</span>
               ${tagsHtml}
             </div>
             <div class="news-card-actions">
-              <button class="news-btn-save ${isSaved ? "saved" : ""}" title="${isSaved ? "已在稍后阅读中 (点击可取消)" : "存入稍后阅读"}">
-                <span>${isSaved ? "★ 已存" : "☆ 稍后阅读"}</span>
+              <button class="news-btn-save ${isSaved ? "saved" : ""}" title="${isSaved ? "取消稍后阅读" : "加入稍后阅读"}">
+                <span>${isSaved ? "已存" : "暂存"}</span>
               </button>
-              <button class="news-btn-detail" title="查看深度内参解读">内参详情</button>
-              <a class="news-btn-read" href="${tool.url}" target="_blank" rel="noopener noreferrer">📖 阅读全文 ↗</a>
+              <button class="news-btn-detail" title="查看摘要详情">详情</button>
+              <a class="news-btn-read" href="${tool.url}" target="_blank" rel="noopener noreferrer">阅读 ↗</a>
             </div>
           </div>
         `;
@@ -435,12 +418,12 @@ class AppController {
               const savedNow = await window.archiveManager.toggleSave(tool);
               if (savedNow) {
                 saveBtn.classList.add("saved");
-                saveBtn.innerHTML = "<span>★ 已存</span>";
-                this.showToast(`已将《${tool.name.slice(0, 16)}...》加入稍后阅读！`);
+                saveBtn.innerHTML = "<span>已存</span>";
+                this.showToast(`已将《${tool.name.slice(0, 16)}...》加入稍后阅读`);
               } else {
                 saveBtn.classList.remove("saved");
-                saveBtn.innerHTML = "<span>☆ 稍后阅读</span>";
-                this.showToast(`已从稍后阅读中移除该资讯`);
+                saveBtn.innerHTML = "<span>暂存</span>";
+                this.showToast(`已从稍后阅读中移除`);
               }
             }
           });
@@ -459,7 +442,12 @@ class AppController {
       else if (tool.sourceType === "Hacker News") sourceTagClass = "hn";
       else if (tool.sourceType === "V2EX") sourceTagClass = "v2";
 
-      const highlightsHtml = (tool.highlights || []).slice(0, 2).map(h => `<span class="card-chip-highlight">${h}</span>`).join("");
+      const highlightsHtml = (tool.highlights || [])
+        .slice(0, 2)
+        .map(h => stripLeadingEmoji(h))
+        .filter(Boolean)
+        .map(h => `<span class="card-chip-highlight">${h}</span>`)
+        .join("");
 
       card.innerHTML = `
         <div class="card-head-row">
@@ -475,8 +463,8 @@ class AppController {
             </div>
           </div>
           <div class="card-head-right">
-            <span class="source-tag ${sourceTagClass}">${tool.sourceType || "创新工具"}</span>
-            ${tool.aiGenerated ? `<span class="card-ai-badge" title="AI 深度提炼">✨ AI</span>` : ""}
+            <span class="source-tag ${sourceTagClass}">${tool.sourceType || "工具"}</span>
+            ${tool.aiGenerated ? `<span class="card-ai-badge" title="AI 摘要">AI</span>` : ""}
           </div>
         </div>
 
@@ -486,16 +474,16 @@ class AppController {
 
         <div class="card-foot-row">
           <div class="card-foot-meta">
-            <span class="card-chip-domain">🔗 ${domain}</span>
+            <span class="card-chip-domain">${domain}</span>
             ${highlightsHtml}
-            <span class="card-chip-date">🕒 ${tool.pubDate || "今日"}</span>
+            <span class="card-chip-date">${tool.pubDate || "今日"}</span>
           </div>
           <div class="card-foot-actions">
-            <button class="card-action-btn card-btn-save ${isSaved ? "saved" : ""}" title="${isSaved ? "已在暂存箱中 (点击可取消)" : "存入稍后使用暂存箱"}">
-              <span>${isSaved ? "★ 已存" : "☆ 暂存"}</span>
+            <button class="card-action-btn card-btn-save ${isSaved ? "saved" : ""}" title="${isSaved ? "取消暂存" : "加入暂存箱"}">
+              <span>${isSaved ? "已存" : "暂存"}</span>
             </button>
-            <button class="card-action-btn card-btn-add ${isAlreadyAdded ? "added" : ""}" data-url="${tool.url}" data-name="${tool.name}" title="${isAlreadyAdded ? "已在首页快捷方式" : "添加为首页快捷方式"}">
-              <span>${isAlreadyAdded ? "✓ 已在首页" : "＋ 加到首页"}</span>
+            <button class="card-action-btn card-btn-add ${isAlreadyAdded ? "added" : ""}" data-url="${tool.url}" data-name="${tool.name}" title="${isAlreadyAdded ? "已在首页快捷方式" : "添加到首页快捷方式"}">
+              <span>${isAlreadyAdded ? "已添加" : "加到首页"}</span>
             </button>
             <a class="card-action-btn card-btn-visit" href="${tool.url}" target="_blank" rel="noopener noreferrer">直达 ↗</a>
           </div>
@@ -520,11 +508,11 @@ class AppController {
             const savedNow = await window.archiveManager.toggleSave(tool);
             if (savedNow) {
               saveBtn.classList.add("saved");
-              saveBtn.innerHTML = "<span>★ 已存</span>";
-              this.showToast(`已将「${tool.name}」存入稍后使用暂存箱！`);
+              saveBtn.innerHTML = "<span>已存</span>";
+              this.showToast(`已将「${tool.name}」加入暂存箱`);
             } else {
               saveBtn.classList.remove("saved");
-              saveBtn.innerHTML = "<span>☆ 暂存</span>";
+              saveBtn.innerHTML = "<span>暂存</span>";
               this.showToast(`已从暂存箱移除「${tool.name}」`);
             }
           }
@@ -537,7 +525,7 @@ class AppController {
         addBtn.addEventListener("click", async (e) => {
           e.stopPropagation();
           if (addBtn.classList.contains("added")) {
-            this.showToast("该网址已经在您的首页了");
+            this.showToast("该网址已在首页快捷方式中");
             return;
           }
           await window.shortcutsManager.addShortcut({
@@ -545,8 +533,8 @@ class AppController {
             url: tool.url
           });
           addBtn.classList.add("added");
-          addBtn.innerHTML = "<span>✓ 已在首页</span>";
-          this.showToast(`已成功将「${tool.name}」添加至首页快捷方式！`);
+          addBtn.innerHTML = "<span>已添加</span>";
+          this.showToast(`已将「${tool.name}」添加至首页`);
           this.renderTools();
         });
       }
@@ -1135,15 +1123,15 @@ class AppController {
     // 访问官网 / 阅读全文按钮
     if (visitBtn) {
       visitBtn.href = tool.url;
-      visitBtn.innerHTML = isNews ? "<span>📖 阅读全文 ↗</span>" : "<span>🚀 访问官方主页</span>";
+      visitBtn.innerHTML = isNews ? "<span>阅读原文 ↗</span>" : "<span>访问主页 ↗</span>";
     }
 
-    // AI 深度解析徽章展示
+    // AI 摘要徽章展示
     const aiBadge = document.getElementById("detailToolAiBadge");
     if (aiBadge) {
       if (tool.aiGenerated) {
         aiBadge.style.display = "inline-flex";
-        aiBadge.innerHTML = `✨ ${tool.aiModel || "AI"} 深度解析`;
+        aiBadge.textContent = `${tool.aiModel || "AI"} 摘要`;
       } else {
         aiBadge.style.display = "none";
       }
@@ -1155,21 +1143,19 @@ class AppController {
     if (rescanBtn) {
       rescanBtn.onclick = async () => {
         if (!window.aiService || !window.aiService.isEnabled()) {
-          this.showToast("请先在设置中开启并配置 AI 大模型 API");
-          const settingsModal = document.getElementById("settingsModal");
-          if (settingsModal) settingsModal.classList.add("open");
+          this.openAiSettingsSection();
           return;
         }
 
         rescanBtn.disabled = true;
-        if (rescanText) rescanText.textContent = "AI 提炼中...";
+        if (rescanText) rescanText.textContent = "提炼中...";
         if (descZhEl) {
           descZhEl.innerHTML = `
-            <span style="display:inline-flex; align-items:center; gap:8px; color: var(--accent-cyan); font-weight: 500;">
-              <svg class="spin-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <span style="display:inline-flex; align-items:center; gap:8px; color: var(--text-secondary); font-weight: 500;">
+              <svg class="spin-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
               </svg>
-              正在调用 ${window.aiService.getModelName()} 重新深度提炼产品概要与痛点亮点...
+              正在调用 ${window.aiService.getModelName()} 生成摘要...
             </span>
           `;
         }
@@ -1182,6 +1168,7 @@ class AppController {
             if (aiResult.titleZh) tool.titleZh = aiResult.titleZh;
             if (aiResult.highlights && aiResult.highlights.length) tool.highlights = aiResult.highlights;
             tool.aiGenerated = true;
+            tool.aiRiskSkipped = false;
             tool.aiModel = window.aiService.getModelName();
 
             if (modal.classList.contains("open")) {
@@ -1191,7 +1178,7 @@ class AppController {
               }
               if (aiBadge) {
                 aiBadge.style.display = "inline-flex";
-                aiBadge.innerHTML = `✨ ${tool.aiModel} 深度解析`;
+                aiBadge.textContent = `${tool.aiModel} 摘要`;
               }
               if (chipsContainer && tool.highlights) {
                 chipsContainer.innerHTML = "";
@@ -1207,14 +1194,16 @@ class AppController {
             this.renderTools();
             this.renderHomeWideCards();
             await window.dailyToolsSyncEngine.saveToCache();
-            this.showToast(`✨「${tool.name}」已由 AI 重新提炼完成！`);
+            this.showToast(`已完成「${tool.name}」摘要提炼`);
           }
         } catch (err) {
-          this.showToast(`AI 提炼失败: ${err.message}`);
+          this.showToast(err && err.isContentRisk
+            ? "该条目触发模型内容合规审核 (Content Exists Risk)，已保留原文"
+            : `AI 提炼失败：${err.message}`);
           if (descZhEl) descZhEl.textContent = tool.descZh || tool.desc;
         } finally {
           rescanBtn.disabled = false;
-          if (rescanText) rescanText.textContent = "AI 深度提炼";
+          if (rescanText) rescanText.textContent = "AI 提炼";
         }
       };
     }
@@ -1224,16 +1213,16 @@ class AppController {
     if (addToHomeBtn && addToHomeText) {
       if (isAdded) {
         addToHomeBtn.classList.add("added");
-        addToHomeText.textContent = "已在首页快捷方式中";
+        addToHomeText.textContent = "已在首页";
       } else {
         addToHomeBtn.classList.remove("added");
-        addToHomeText.textContent = isNews ? "＋ 收藏该资讯为快捷方式" : "＋ 添加到首页快捷方式";
+        addToHomeText.textContent = "加到首页";
       }
 
       // 重置点击事件
       addToHomeBtn.onclick = async () => {
         if (window.shortcutsManager.hasShortcut(tool.url)) {
-          this.showToast("该网址已经在您的首页了");
+          this.showToast("该网址已在首页快捷方式中");
           return;
         }
         await window.shortcutsManager.addShortcut({
@@ -1241,10 +1230,10 @@ class AppController {
           url: tool.url
         });
         addToHomeBtn.classList.add("added");
-        addToHomeText.textContent = "已在首页快捷方式中";
+        addToHomeText.textContent = "已在首页";
         this.renderTools();
         this.renderHomeWideCards();
-        this.showToast(`已成功将「${tool.name}」添加至首页快捷方式！`);
+        this.showToast(`已将「${tool.name}」添加至首页`);
       };
     }
 
@@ -1302,12 +1291,12 @@ class AppController {
     const aiReady = !!(window.aiService && window.aiService.isEnabled());
 
     if (!aiReady) {
-      if (meta) meta.textContent = "开启 AI 模型后自动生成多源简报";
-      if (btnText) btnText.textContent = "⚙️ 去配置 AI";
+      if (meta) meta.textContent = "未配置 AI 模型";
+      if (btnText) btnText.textContent = "配置 AI";
       const empty = document.createElement("div");
       empty.className = "ai-overview-empty";
       const span = document.createElement("span");
-      span.textContent = `当前已聚合 ${items.length} 条跨界内容（人文 / 全球 / 财经 / 自然 / 艺术 / 科技），配置 AI 模型后可一键梳理 30 秒今日总览。`;
+      span.textContent = `当前共聚合 ${items.length} 条多源动态，开启 AI 摘要引擎后可一键生成今日总览。`;
       empty.appendChild(span);
       body.replaceChildren(empty);
       return;
@@ -1316,9 +1305,10 @@ class AppController {
     const cached = window.aiService.getCachedOverview(mode);
     if (cached) {
       if (meta) {
-        meta.textContent = `${cached.date} · ${cached.model} · 汇总 ${cached.sourceCount || "多"} 个订阅源 (${cached.itemCount || items.length} 条)`;
+        const riskNote = cached.riskFiltered ? " · 已过滤风控条目" : "";
+        meta.textContent = `${cached.date} · ${cached.model} · ${cached.sourceCount || "多"} 源${riskNote}`;
       }
-      if (btnText) btnText.textContent = "🔄 重新概括";
+      if (btnText) btnText.textContent = "重新概括";
 
       const nodes = [];
 
@@ -1345,7 +1335,7 @@ class AppController {
 
           const dom = document.createElement("div");
           dom.className = "ai-sector-domain";
-          dom.textContent = `${sec.emoji || "✨"} ${sec.domain || "领域洞察"}`;
+          dom.textContent = sec.domain || "领域动态";
 
           const dig = document.createElement("div");
           dig.className = "ai-sector-digest";
@@ -1361,7 +1351,7 @@ class AppController {
       if (cached.topPick) {
         const pick = document.createElement("div");
         pick.className = "ai-overview-toppick";
-        pick.textContent = `💡 今日破茧精读推荐：${cached.topPick}`;
+        pick.textContent = `精读推荐：${cached.topPick}`;
         nodes.push(pick);
       }
 
@@ -1369,16 +1359,15 @@ class AppController {
       return;
     }
 
-    // 尚无今日缓存：若允许静默自动生成，且条目已加载，自动触发一次总览提炼
-    if (meta) meta.textContent = `${window.aiService.getModelName()} · 就绪`;
-    if (btnText) btnText.textContent = "✨ 生成总览";
+    if (meta) meta.textContent = `${window.aiService.getModelName()}`;
+    if (btnText) btnText.textContent = "生成总览";
 
     const empty = document.createElement("div");
     empty.className = "ai-overview-empty";
     const span = document.createElement("span");
     span.textContent = window.aiService.isGeneratingOverview
-      ? `✨ 正在调用 ${window.aiService.getModelName()} 梳理 ${items.length} 条多源订阅内容...`
-      : `已汇聚 ${items.length} 条跨界与科技发现，点击「✨ 生成总览」让 AI 帮您 30 秒浓缩今日重点。`;
+      ? `正在梳理 ${items.length} 条订阅动态...`
+      : `已汇聚 ${items.length} 条多源内容，点击右侧生成今日总览。`;
     empty.appendChild(span);
     body.replaceChildren(empty);
 
@@ -1401,7 +1390,7 @@ class AppController {
       : [];
 
     if (!items.length) {
-      if (interactive) this.showToast("当前分类暂无可概括的内容，请先点击刷新抓取新源");
+      if (interactive) this.showToast("当前分类暂无内容，请先刷新订阅源");
       return;
     }
 
@@ -1413,23 +1402,29 @@ class AppController {
 
     if (refreshBtn) refreshBtn.disabled = true;
     if (navBtn) navBtn.disabled = true;
-    if (refreshText) refreshText.textContent = "梳理总览中...";
+    if (refreshText) refreshText.textContent = "概括中...";
     if (navBtnText) navBtnText.textContent = "概括中...";
 
     if (body && interactive) {
       const loading = document.createElement("div");
       loading.className = "ai-overview-empty";
-      loading.textContent = `✨ 正在调用 ${window.aiService.getModelName()} 纵览全部分类与订阅源，请稍候...`;
+      loading.textContent = `正在调用 ${window.aiService.getModelName()} 梳理今日多源简报...`;
       body.replaceChildren(loading);
     }
 
     try {
-      await window.aiService.generateDailyOverview(items, mode);
+      const ov = await window.aiService.generateDailyOverview(items, mode);
       this.renderAiDailyOverview(false);
-      if (interactive) this.showToast("✨ AI 今日跨界总览已生成！");
+      if (interactive) {
+        this.showToast(ov && ov.riskFiltered ? "今日总览已生成（已自动跳过风控条目）" : "今日总览已生成");
+      }
     } catch (err) {
       this.renderAiDailyOverview(false);
-      if (interactive) this.showToast(`生成今日总览失败: ${err.message}`);
+      if (interactive) {
+        this.showToast(err && err.isContentRisk
+          ? "当前条目触发了模型内容合规审核，建议切换模型或筛选其他分类重试"
+          : `生成今日总览失败：${err.message}`);
+      }
     } finally {
       if (refreshBtn) refreshBtn.disabled = false;
       if (navBtn) navBtn.disabled = false;
@@ -1437,7 +1432,7 @@ class AppController {
     }
   }
 
-  // 批量调用大模型扫描提炼今日新发现（优先处理当前筛选视图下未提炼内容，实时增量更新并真实汇报成功/失败）
+  // 批量调用大模型扫描提炼今日新发现（区分内容风控跳过与真实接口故障）
   async triggerAiBatchScan() {
     if (!window.aiService || !window.aiService.isEnabled()) {
       this.openAiSettingsSection();
@@ -1454,15 +1449,14 @@ class AppController {
     if (scanBtn) scanBtn.disabled = true;
     if (homeAiBtn) homeAiBtn.disabled = true;
     if (toolsBtn) toolsBtn.disabled = true;
-    if (scanText) scanText.textContent = "AI 正在深度提炼...";
-    if (homeAiText) homeAiText.textContent = "AI 提炼中...";
-    if (toolsText) toolsText.textContent = "AI 提炼中...";
+    if (scanText) scanText.textContent = "提炼中...";
+    if (homeAiText) homeAiText.textContent = "提炼中...";
+    if (toolsText) toolsText.textContent = "提炼中...";
 
     try {
       const engine = window.dailyToolsSyncEngine;
       const allDaily = engine ? (engine.dailyTools || []) : [];
 
-      // 若用户在特定来源/分类标签下点击提炼，优先提炼当前所选分类，反馈更快
       const mode = this.homeDailyMode || "all";
       const source = this.homeSelectedSource || "all";
       let scopedTools = allDaily;
@@ -1475,23 +1469,23 @@ class AppController {
       }
       if (!scopedTools.length) scopedTools = allDaily;
 
-      const unscannedCount = scopedTools.filter(t => !t.aiGenerated).length;
+      const unscannedCount = scopedTools.filter(t => !t.aiGenerated && !t.aiRiskSkipped).length;
       const forceRescan = unscannedCount === 0 && !window.aiService.isScanning;
 
       if (window.aiService.isScanning) {
-        this.showToast(`✨ 后台已有 AI 自动提炼任务在运行，已为您同步实时进度...`);
+        this.showToast("后台 AI 提炼正在运行，已同步进度...");
       } else if (forceRescan) {
-        this.showToast(`✨ 当前分类均已提炼过，正在使用 ${window.aiService.getModelName()} 重新深度提炼 (${scopedTools.length} 条)...`);
+        this.showToast(`正在使用 ${window.aiService.getModelName()} 重新提炼当前分类 (${scopedTools.length} 条)...`);
       } else {
-        this.showToast(`✨ 开始调用 ${window.aiService.getModelName()} 提炼剩余 ${unscannedCount} 条未解析内容...`);
+        this.showToast(`开始使用 ${window.aiService.getModelName()} 提炼 ${unscannedCount} 条新内容...`);
       }
 
       const stats = await window.aiService.batchScanDailyTools(scopedTools, {
         forceRescan,
         onProgress: (completed, total) => {
-          if (scanText) scanText.textContent = `扫描中 (${completed}/${total})`;
-          if (homeAiText) homeAiText.textContent = `提炼中 (${completed}/${total})`;
-          if (toolsText) toolsText.textContent = `AI提炼 (${completed}/${total})`;
+          if (scanText) scanText.textContent = `提炼中 (${completed}/${total})`;
+          if (homeAiText) homeAiText.textContent = `提炼 (${completed}/${total})`;
+          if (toolsText) toolsText.textContent = `提炼 (${completed}/${total})`;
         },
         onBatchComplete: async () => {
           if (engine) await engine.saveToCache();
@@ -1505,26 +1499,31 @@ class AppController {
 
       if (stats && stats.skipped) {
         this.openAiSettingsSection();
-      } else if (stats && stats.succeeded > 0 && stats.failed === 0) {
-        this.showToast(`🎉 AI 深度提炼完成！本次成功提炼 ${stats.succeeded} 条内容`);
-      } else if (stats && stats.succeeded > 0 && stats.failed > 0) {
-        this.showToast(`✨ 本次提炼成功 ${stats.succeeded} 条，另有 ${stats.failed} 条失败 (${stats.lastError})`);
+      } else if (stats && stats.succeeded > 0) {
+        const notes = [];
+        if (stats.riskSkipped > 0) notes.push(`${stats.riskSkipped} 条触发内容审核已保留原文`);
+        if (stats.failed > 0) notes.push(`${stats.failed} 条请求失败`);
+        this.showToast(notes.length
+          ? `已提炼 ${stats.succeeded} 条（${notes.join("，")}）`
+          : `已完成 ${stats.succeeded} 条内容提炼`);
+      } else if (stats && stats.riskSkipped > 0 && stats.failed === 0) {
+        this.showToast(`当前 ${stats.riskSkipped} 条内容触发模型内容审核 (Content Exists Risk)，已保留原文`);
       } else if (stats && stats.failed > 0) {
-        this.showToast(`⚠️ AI 提炼失败 (${stats.lastError || "接口请求异常"})，请检查设置中的 API Key 与模型名`);
+        this.showToast(`AI 提炼失败：${stats.lastError || "接口请求异常"}`);
       } else if (stats && stats.allAlreadyScanned) {
-        this.showToast("✨ 全部内容均已完成 AI 提炼");
+        this.showToast("当前内容已完成提炼");
       } else {
-        this.showToast("当前暂无可提炼的新内容");
+        this.showToast("当前暂无可提炼内容");
       }
     } catch (err) {
-      this.showToast(`AI 扫描提炼异常: ${err.message}`);
+      this.showToast(`提炼异常：${err.message}`);
     } finally {
       if (scanBtn) scanBtn.disabled = false;
       if (homeAiBtn) homeAiBtn.disabled = false;
       if (toolsBtn) toolsBtn.disabled = false;
-      if (scanText) scanText.textContent = "立即深度扫描今日发现";
-      if (homeAiText) homeAiText.textContent = "AI提炼";
-      if (toolsText) toolsText.textContent = "AI 深度扫描";
+      if (scanText) scanText.textContent = "提炼今日内容";
+      if (homeAiText) homeAiText.textContent = "提炼";
+      if (toolsText) toolsText.textContent = "提炼";
     }
   }
 

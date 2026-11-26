@@ -19,10 +19,6 @@
   <!-- 景深柔化与暗化蒙版 -->
   <div class="wallpaper-overlay" id="wallpaperOverlay"></div>
 
-  <!-- 苹果空间灵动氛围光晕层 (Apple Spatial Ambient Orbs) -->
-  <div class="ambient-glow ambient-glow-1"></div>
-  <div class="ambient-glow ambient-glow-2"></div>
-
   <!-- 主应用容器 -->
   <div class="app-wrapper">
 
@@ -168,26 +164,23 @@
               <span class="daily-nav-count" id="homeDailyCountBadge">实时聚合</span>
             </div>
 
-            <!-- 中间：三维模式分段控制器 (综合动态 / 破茧资讯 / 创新工具) -->
+            <!-- 中间：三维模式分段控制器 -->
             <div class="home-daily-main-tabs" id="homeDailyMainTabs">
               <button class="main-tab-pill active" data-mode="all">
-                <span class="main-tab-icon">🌟</span>
                 <span>综合动态</span>
               </button>
               <button class="main-tab-pill" data-mode="news">
-                <span class="main-tab-icon">📰</span>
-                <span>破茧资讯</span>
+                <span>跨界资讯</span>
               </button>
               <button class="main-tab-pill" data-mode="tools">
-                <span class="main-tab-icon">🛠️</span>
                 <span>创新工具</span>
               </button>
             </div>
 
-            <!-- 右侧：精炼工具栏 (今日总览 / 刷新 / AI提炼 / 订阅管理) -->
+            <!-- 右侧：精炼工具栏 -->
             <div class="daily-nav-actions">
-              <button class="daily-tool-btn daily-tool-btn-accent" id="homeAiOverviewBtn" title="让 AI 梳理概括全部订阅源的今日总览">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="daily-tool-btn daily-tool-btn-accent" id="homeAiOverviewBtn" title="生成多订阅源今日总览">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
                   <rect x="3" y="3" width="18" height="18" rx="4"></rect>
                   <path d="M8 9h8"></path>
                   <path d="M8 13h5"></path>
@@ -195,22 +188,22 @@
                 </svg>
                 <span id="homeAiOverviewBtnText">今日总览</span>
               </button>
-              <button class="daily-tool-btn" id="homeSyncDailyBtn" title="重新从各大源抓取最新内容">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="daily-tool-btn" id="homeSyncDailyBtn" title="刷新全网订阅源">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
                   <polyline points="23 4 23 10 17 10"></polyline>
                   <polyline points="1 20 1 14 7 14"></polyline>
                   <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                 </svg>
                 <span id="homeSyncDailyText">刷新</span>
               </button>
-              <button class="daily-tool-btn" id="homeAiScanBtn" title="调用 AI 大模型深度提炼">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="daily-tool-btn" id="homeAiScanBtn" title="调用 AI 提炼当前列表摘要">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
                   <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"></path>
                 </svg>
-                <span id="homeAiScanText">AI提炼</span>
+                <span id="homeAiScanText">提炼</span>
               </button>
-              <button class="daily-tool-btn" id="homeManageNewsBtn" title="管理破茧资讯订阅源与自定义 RSS">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="daily-tool-btn" id="homeManageNewsBtn" title="管理订阅源与自定义 RSS">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
                   <path d="M4 11a9 9 0 0 1 9 9"></path>
                   <path d="M4 4a16 16 0 0 1 16 16"></path>
                   <circle cx="5" cy="19" r="1"></circle>
@@ -220,29 +213,29 @@
             </div>
           </div>
 
-          <!-- 第 2 层：轻量优雅的二级子分类筛选条 -->
+          <!-- 第 2 层：二级来源筛选条 -->
           <div class="daily-subchannel-wrapper">
             <div class="daily-source-pills" id="homeSourcePills">
               <!-- 由 app.js 动态渲染来源胶囊 -->
             </div>
           </div>
 
-          <!-- AI 跨界今日总览简报卡片 -->
+          <!-- 今日总览简报卡片 -->
           <div class="ai-overview-card" id="aiDailyOverviewCard">
             <div class="ai-overview-header">
               <div class="ai-overview-title-group">
-                <span class="ai-overview-spark">✦ AI 今日总览</span>
-                <span class="ai-overview-meta" id="aiOverviewMeta">多订阅源跨界简报</span>
+                <span class="ai-overview-spark">今日总览</span>
+                <span class="ai-overview-meta" id="aiOverviewMeta"></span>
               </div>
               <div class="ai-overview-actions">
-                <button class="ai-ov-btn" id="refreshAiOverviewBtn" title="调用大模型重新概括当前订阅源总览">
-                  <span id="refreshAiOverviewText">✨ 生成总览</span>
+                <button class="ai-ov-btn" id="refreshAiOverviewBtn" title="重新生成总览">
+                  <span id="refreshAiOverviewText">生成总览</span>
                 </button>
-                <button class="ai-ov-btn ai-ov-toggle" id="toggleAiOverviewBtn" title="展开或收起今日总览">收起</button>
+                <button class="ai-ov-btn ai-ov-toggle" id="toggleAiOverviewBtn" title="展开或收起">收起</button>
               </div>
             </div>
             <div class="ai-overview-body" id="aiDailyOverviewBody">
-              <!-- 由 app.js 动态渲染总览正文、跨界分栏与精读推荐 -->
+              <!-- 由 app.js 动态渲染 -->
             </div>
           </div>
 
@@ -270,21 +263,19 @@
           </div>
         </div>
 
-        <!-- 奇趣探索更新状态条 (当用户切换至奇趣探索分类时展现) -->
+        <!-- 奇趣探索更新状态条 -->
         <div class="fun-explore-banner" id="funExploreBanner" style="display: none;">
           <div class="fun-banner-left">
-            <span class="fun-banner-icon">🌈</span>
-            <span class="fun-banner-title">奇趣探索更新源</span>
-            <span class="fun-banner-sub">每 3 天探索更新脑洞互动与极客视觉实验</span>
+            <span class="fun-banner-title">奇趣探索</span>
             <span class="fun-banner-badge" id="funLastSyncBadge">刚刚更新</span>
           </div>
-          <button class="glass-pill-action-btn" id="funSyncBtn" title="手动探索最新奇趣脑洞网站与创意实验">
+          <button class="glass-pill-action-btn" id="funSyncBtn" title="刷新奇趣探索源">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="23 4 23 10 17 10"></polyline>
               <polyline points="1 20 1 14 7 14"></polyline>
               <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
             </svg>
-            <span id="funSyncBtnText">探索新奇</span>
+            <span id="funSyncBtnText">换一批</span>
           </button>
         </div>
 
@@ -393,7 +384,7 @@
             <div class="detail-title-row">
               <h3 class="detail-title" id="detailToolTitle">工具名称</h3>
               <span class="tool-badge daily" id="detailToolBadge">今日新品</span>
-              <span class="tool-badge ai-badge" id="detailToolAiBadge" style="display: none;">✨ AI 深度解析</span>
+              <span class="tool-badge ai-badge" id="detailToolAiBadge" style="display: none;">AI 摘要</span>
             </div>
             <div class="detail-meta" id="detailToolMeta">Product Hunt • 今日更新</div>
           </div>
@@ -403,47 +394,43 @@
         </button>
       </div>
 
-      <!-- 详细介绍正文 (纯正地道中文) -->
+      <!-- 详细介绍正文 -->
       <div class="detail-body">
         <div class="detail-section">
           <div class="detail-section-title">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            <span>功能与应用场景 (中文详解)</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <span>摘要</span>
           </div>
-          <p class="detail-desc-zh" id="detailToolDescZh">正在生成详细中文介绍...</p>
+          <p class="detail-desc-zh" id="detailToolDescZh">正在加载摘要...</p>
         </div>
 
         <div class="detail-section" id="detailHighlightsSection">
           <div class="detail-section-title">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-            <span>核心亮点与标签</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span>标签</span>
           </div>
           <div class="detail-highlights-chips" id="detailToolHighlights">
-            <!-- 动态高亮标签 -->
+            <!-- 动态标签 -->
           </div>
         </div>
       </div>
 
       <!-- 底部操作按钮 -->
       <div class="modal-actions detail-actions">
-        <button class="btn-secondary" id="detailAiRescanBtn" title="调用配置的 AI 大模型重新深度生成本卡片概要">
+        <button class="btn-secondary" id="detailAiRescanBtn" title="使用 AI 重新生成本条摘要">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"></path>
           </svg>
-          <span id="detailAiRescanText">AI 深度提炼</span>
+          <span id="detailAiRescanText">AI 提炼</span>
         </button>
-        <button class="btn-secondary" id="detailSaveArchiveBtn" title="暂存到稍后使用，以备今后用到">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-          <span id="detailSaveArchiveText">⭐ 暂存归档</span>
+        <button class="btn-secondary" id="detailSaveArchiveBtn" title="保存到稍后使用">
+          <span id="detailSaveArchiveText">暂存</span>
         </button>
         <button class="btn-secondary" id="detailAddToHomeBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <span id="detailAddToHomeText">＋ 添加到首页快捷方式</span>
+          <span id="detailAddToHomeText">加到首页</span>
         </button>
         <a class="btn-primary" id="detailVisitSiteBtn" href="#" target="_blank" rel="noopener noreferrer">
-          <span>🚀 访问官方主页</span>
+          <span>访问主页 ↗</span>
         </a>
       </div>
     </div>
@@ -459,196 +446,167 @@
         </button>
       </div>
 
-      <!-- 壁纸引擎设置 -->
+      <!-- 壁纸设置 -->
       <div class="setting-section">
         <div class="setting-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-          壁纸引擎设置
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          壁纸
         </div>
         <div class="form-group">
           <label class="form-label">壁纸源</label>
           <select class="form-select" id="settingWpSource">
-            <option value="bing">Bing 微软每日超清壁纸 (自然风光)</option>
-            <option value="apple">Apple 原厂液态流体壁纸 (iOS / macOS 风格)</option>
-            <option value="unsplash">Unsplash 4K 极简摄影 (建筑与风景)</option>
-            <option value="anime">二次元治愈系插画</option>
-            <option value="mesh">纯代码实时动态流体 (无需网络/8款风格)</option>
-            <option value="custom">自定义壁纸图片 URL</option>
+            <option value="bing">Bing 每日壁纸</option>
+            <option value="apple">Apple 液态流体</option>
+            <option value="unsplash">Unsplash 摄影</option>
+            <option value="anime">二次元插画</option>
+            <option value="mesh">动态渐变背景</option>
+            <option value="custom">自定义图片链接</option>
           </select>
         </div>
         <!-- 纯代码流体渐变子风格选择 -->
         <div class="form-group" id="settingMeshStyleGroup" style="display: none;">
-          <label class="form-label">纯代码流体渐变风格</label>
+          <label class="form-label">渐变风格</label>
           <select class="form-select" id="settingMeshStyle">
-            <option value="auto">🎲 自动轮换各种风格</option>
+            <option value="auto">自动轮换</option>
             <option value="0">天青极光 (Aurora)</option>
             <option value="1">暮光落霞 (Sunset)</option>
-            <option value="2">暗夜电光 (Midnight Neon)</option>
-            <option value="3">薄荷翠影 (Emerald Oasis)</option>
-            <option value="4">梦幻薰衣草 (Dreamy Lavender)</option>
-            <option value="5">日蚀金辉 (Solar Flare)</option>
-            <option value="6">星河深空 (Deep Cosmos)</option>
-            <option value="7">深海琉璃 (Oceanic Abyss)</option>
+            <option value="2">暗夜电光 (Midnight)</option>
+            <option value="3">薄荷翠影 (Emerald)</option>
+            <option value="4">薰衣草雾 (Lavender)</option>
+            <option value="5">日蚀金辉 (Solar)</option>
+            <option value="6">深空星河 (Cosmos)</option>
+            <option value="7">深海琉璃 (Oceanic)</option>
           </select>
         </div>
         <div class="form-group" id="settingCustomUrlGroup" style="display: none;">
-          <label class="form-label">自定义壁纸图片链接</label>
+          <label class="form-label">图片链接</label>
           <input type="text" class="form-input" id="settingCustomWpUrl" placeholder="https://..." />
         </div>
         <div class="form-group">
-          <label class="form-label">自动变换策略</label>
+          <label class="form-label">切换频率</label>
           <select class="form-select" id="settingWpFreq">
-            <option value="every_newtab">每次打开新标签页随机更换 (推荐)</option>
-            <option value="hourly">每隔 1 小时自动变换</option>
-            <option value="daily">每日自动变换</option>
-            <option value="static">保持当前壁纸固定</option>
+            <option value="every_newtab">每次新标签页</option>
+            <option value="hourly">每小时</option>
+            <option value="daily">每日</option>
+            <option value="static">固定当前壁纸</option>
           </select>
         </div>
       </div>
 
-      <!-- 破茧资讯源与自定义 RSS 订阅设置 (打破信息茧房) -->
+      <!-- 订阅源设置 -->
       <div class="setting-section" id="settingSectionNews">
-        <div class="setting-title" style="justify-content: space-between;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 11a9 9 0 0 1 9 9"></path>
-              <path d="M4 4a16 16 0 0 1 16 16"></path>
-              <circle cx="5" cy="19" r="1"></circle>
-            </svg>
-            <span>破茧资讯源与 RSS 订阅</span>
-          </div>
-          <span class="setting-title-tag">打破信息茧房</span>
+        <div class="setting-title">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+            <path d="M4 11a9 9 0 0 1 9 9"></path>
+            <path d="M4 4a16 16 0 0 1 16 16"></path>
+            <circle cx="5" cy="19" r="1"></circle>
+          </svg>
+          <span>订阅源与 RSS</span>
         </div>
 
-        <div class="form-hint" style="margin-bottom: 14px; color: var(--accent-cyan);">
-          ✨ 聚合人文哲学、全球视野、宏观财经、自然科学、艺术美学与前沿科技，真正跳出单一技术圈与算法茧房，开拓跨界视野。
-        </div>
-
-        <!-- 内置多维破茧资讯源开关网格 -->
-        <div class="news-sources-grid" id="newsSourcesGrid">
-          <!-- 由 app.js 动态渲染 12 大跨界内置源开关：知乎日报、Aeon 人文、BBC 中文、FT中文网、自然科学、艺术美学、Solidot 奇客、阮一峰周刊、少数派、极客公园、Hacker News、AIHot -->
-        </div>
+        <!-- 内置资讯源开关网格 -->
+        <div class="news-sources-grid" id="newsSourcesGrid"></div>
 
         <!-- 自定义 RSS 订阅区域 -->
         <div class="custom-rss-box">
           <div class="custom-rss-header">
             <div class="custom-rss-title">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              <span>自定义 RSS / Atom 订阅源</span>
+              <span>自定义 RSS / Atom</span>
             </div>
-            <span class="custom-rss-hint">支持订阅任意专业博客、科技媒体或行业期刊</span>
           </div>
           <div class="custom-rss-input-row">
-            <input type="text" class="form-input custom-rss-name-input" id="customRssName" placeholder="源名称 (如：InfoQ 深度 / 36氪)" />
-            <input type="text" class="form-input custom-rss-url-input" id="customRssUrl" placeholder="RSS/Atom 地址 (https://...)" />
-            <button type="button" class="btn-primary custom-rss-add-btn" id="addCustomRssBtn">＋ 订阅并破茧</button>
+            <input type="text" class="form-input custom-rss-name-input" id="customRssName" placeholder="名称" />
+            <input type="text" class="form-input custom-rss-url-input" id="customRssUrl" placeholder="https://..." />
+            <button type="button" class="btn-primary custom-rss-add-btn" id="addCustomRssBtn">添加订阅</button>
           </div>
-          <!-- 已订阅自定义源列表 -->
-          <div class="custom-feeds-list" id="customFeedsList">
-            <!-- 动态渲染自定义源标签 -->
-          </div>
+          <div class="custom-feeds-list" id="customFeedsList"></div>
         </div>
       </div>
 
-      <!-- AI 大模型引擎设置 (每日新发现智能深度扫描) -->
+      <!-- AI 摘要引擎设置 -->
       <div class="setting-section" id="settingSectionAi">
         <div class="setting-title" style="justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
               <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"></path>
             </svg>
-            <span>AI 大模型深度概要引擎</span>
+            <span>AI 摘要引擎</span>
           </div>
-          <label class="switch-toggle" title="开启/关闭 AI 大模型深度提炼">
+          <label class="switch-toggle" title="开启或关闭 AI 摘要引擎">
             <input type="checkbox" id="settingAiToggle" />
             <span class="switch-slider"></span>
           </label>
         </div>
 
         <div class="ai-config-body" id="aiConfigBody">
-          <div class="form-hint" style="margin-bottom: 12px; color: var(--accent-cyan);">
-            ✨ 开启后，在发现每日新工具时调用您配置的 AI 模型，自动深度提炼地道中文定位、痛点解析与核心亮点。
-          </div>
-
-          <!-- 模型服务商预设 -->
           <div class="form-group">
-            <label class="form-label">服务商 / 接口预设</label>
+            <label class="form-label">服务商预设</label>
             <select class="form-select" id="settingAiProvider">
-              <option value="deepseek">DeepSeek (深度求索 - 强烈推荐，极高性价比)</option>
-              <option value="oneapi">🌐 聚合平台 (OneAPI / NewAPI / 聚合中转站)</option>
-              <option value="openrouter">OpenRouter (全球模型聚合市场)</option>
-              <option value="siliconflow">硅基流动 (SiliconFlow - 极速开源聚合平台)</option>
-              <option value="qwen">阿里通义千问 (DashScope)</option>
-              <option value="moonshot">月之暗面 Kimi (Moonshot AI)</option>
-              <option value="openai">OpenAI (ChatGPT 官方)</option>
-              <option value="ollama">Ollama (本地私有化部署，无需联网)</option>
-              <option value="custom">自定义兼容 API (支持第三方中转与私有模型)</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="oneapi">OneAPI / NewAPI 聚合平台</option>
+              <option value="openrouter">OpenRouter</option>
+              <option value="siliconflow">硅基流动 SiliconFlow</option>
+              <option value="qwen">通义千问 DashScope</option>
+              <option value="moonshot">Kimi (Moonshot)</option>
+              <option value="openai">OpenAI</option>
+              <option value="ollama">Ollama (本地部署)</option>
+              <option value="custom">自定义 OpenAI 兼容接口</option>
             </select>
           </div>
 
-          <!-- API Base URL -->
           <div class="form-group">
-            <label class="form-label" for="settingAiBaseUrl">API Base URL (接口基础地址)</label>
+            <label class="form-label" for="settingAiBaseUrl">API Base URL</label>
             <input type="text" class="form-input" id="settingAiBaseUrl" placeholder="https://api.deepseek.com/v1" />
-            <div class="form-hint" style="margin-top: 4px;">支持输入根域名、/v1 或完整 /chat/completions，引擎将智能规范化自适应</div>
           </div>
 
-          <!-- API Key -->
           <div class="form-group" id="settingAiApiKeyGroup">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label class="form-label" for="settingAiApiKey" style="margin-bottom: 0;">API Key 密钥</label>
+              <label class="form-label" for="settingAiApiKey" style="margin-bottom: 0;">API Key</label>
               <button type="button" class="btn-text-action" id="toggleAiKeyVisibility">显示密钥</button>
             </div>
             <input type="password" class="form-input" id="settingAiApiKey" placeholder="sk-..." autocomplete="off" />
-            <div class="form-hint">密钥仅保存在您的本地浏览器 Storage，安全无泄漏风险</div>
+            <div class="form-hint">仅存储在本地浏览器中</div>
           </div>
 
-          <!-- Model Name -->
           <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label class="form-label" for="settingAiModel" style="margin-bottom: 0;">模型名称 (Model)</label>
-              <button type="button" class="btn-text-action" id="fetchAiModelsBtn" title="从聚合平台或网关自动拉取当前可用模型">🔄 拉取可用模型</button>
+              <label class="form-label" for="settingAiModel" style="margin-bottom: 0;">模型名称</label>
+              <button type="button" class="btn-text-action" id="fetchAiModelsBtn" title="从接口拉取可用模型">拉取模型</button>
             </div>
             <div style="position: relative;">
-              <input type="text" class="form-input" id="settingAiModel" placeholder="deepseek-chat 或输入聚合模型ID" list="aiModelDatalist" />
+              <input type="text" class="form-input" id="settingAiModel" placeholder="deepseek-chat" list="aiModelDatalist" />
               <datalist id="aiModelDatalist"></datalist>
             </div>
             <div class="ai-model-quick-pills" id="aiModelQuickPills" style="display: none;"></div>
           </div>
 
-          <!-- 操作按钮与测试连接 -->
           <div class="ai-action-row">
             <button type="button" class="btn-secondary" id="testAiConnectionBtn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-              <span id="testAiConnectionText">测试 API 连接</span>
+              <span id="testAiConnectionText">测试连接</span>
             </button>
-            <button type="button" class="btn-secondary" id="triggerAiBatchScanBtn" title="使用配置的大模型立即重新扫描提炼今日新发现">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"></path></svg>
-              <span id="triggerAiBatchScanText">立即深度扫描今日发现</span>
+            <button type="button" class="btn-secondary" id="triggerAiBatchScanBtn">
+              <span id="triggerAiBatchScanText">提炼今日内容</span>
             </button>
           </div>
           <div class="ai-status-banner" id="aiStatusBanner" style="display: none;"></div>
         </div>
       </div>
 
-      <!-- 视觉效果调节 -->
+      <!-- 视觉调节 -->
       <div class="setting-section">
         <div class="setting-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0 0 20z"></path></svg>
-          液态玻璃视觉调节
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0 0 20z"></path></svg>
+          视觉调节
         </div>
         <div class="form-group">
-          <label class="form-label">背景暗化蒙版 (提升文字辨识度)</label>
+          <label class="form-label">背景暗化</label>
           <div class="slider-container">
             <input type="range" class="range-slider" id="settingMaskSlider" min="10" max="80" step="5" value="35" />
             <span class="slider-val" id="settingMaskVal">35%</span>
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">背景高斯模糊 (景深质感)</label>
+          <label class="form-label">背景模糊</label>
           <div class="slider-container">
             <input type="range" class="range-slider" id="settingBlurSlider" min="0" max="30" step="2" value="0" />
             <span class="slider-val" id="settingBlurVal">0px</span>
@@ -696,14 +654,14 @@
               <path d="M1 3h22v5H1z"></path>
               <path d="M10 12h4"></path>
             </svg>
-            <span>📦 稍后使用 (<span id="archiveSavedCount">0</span>)</span>
+            <span>稍后使用 (<span id="archiveSavedCount">0</span>)</span>
           </button>
           <button class="modal-tab-btn" id="archiveTabHistory" data-tab="history">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
-            <span>🕒 发现历史长廊 (<span id="archiveHistoryCount">0</span>)</span>
+            <span>发现历史 (<span id="archiveHistoryCount">0</span>)</span>
           </button>
         </div>
         <button class="modal-close-btn" id="archiveModalClose" title="关闭 (Esc)">
@@ -721,16 +679,16 @@
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" class="archive-search-input" id="archiveSearchInput" placeholder="在暂存与历史记录中快速搜索网站或关键词..." />
+          <input type="text" class="archive-search-input" id="archiveSearchInput" placeholder="搜索站点或关键词..." />
         </div>
         <div class="archive-source-pills" id="archiveSourcePills">
           <button class="archive-pill active" data-source="all">全部</button>
-          <button class="archive-pill" data-source="AIHot">🔥 AIHot</button>
-          <button class="archive-pill" data-source="Product Hunt">🅿️ PH新品</button>
-          <button class="archive-pill" data-source="GitHub">★ GitHub</button>
-          <button class="archive-pill" data-source="Hacker News">Y Show HN</button>
-          <button class="archive-pill" data-source="V2EX">V V2EX</button>
-          <button class="archive-pill" data-source="奇趣探索">🌈 奇趣</button>
+          <button class="archive-pill" data-source="AIHot">AIHot</button>
+          <button class="archive-pill" data-source="Product Hunt">Product Hunt</button>
+          <button class="archive-pill" data-source="GitHub">GitHub</button>
+          <button class="archive-pill" data-source="Hacker News">Hacker News</button>
+          <button class="archive-pill" data-source="V2EX">V2EX</button>
+          <button class="archive-pill" data-source="奇趣探索">奇趣探索</button>
         </div>
       </div>
 
@@ -742,7 +700,7 @@
       <!-- 底部管理工具栏 -->
       <div class="archive-footer">
         <div class="archive-footer-left">
-          <span class="archive-tips" id="archiveFooterTips">💡 暂存箱永久保存，今后要用时随时一键添加至首页或直达</span>
+          <span class="archive-tips" id="archiveFooterTips"></span>
         </div>
         <div class="archive-footer-actions">
           <button class="btn-secondary btn-sm" id="exportArchiveJsonBtn" title="将暂存箱导出为 JSON 备份">导出 JSON</button>

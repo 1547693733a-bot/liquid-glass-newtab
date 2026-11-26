@@ -6,58 +6,58 @@
 
 const AI_PRESETS = {
   deepseek: {
-    name: "DeepSeek (深度求索 - 强烈推荐，极高性价比)",
+    name: "DeepSeek",
     baseUrl: "https://api.deepseek.com/v1",
     model: "deepseek-chat",
     docUrl: "https://platform.deepseek.com"
   },
   oneapi: {
-    name: "🌐 聚合平台 (OneAPI / NewAPI / 聚合中转站)",
+    name: "OneAPI / NewAPI 聚合平台",
     baseUrl: "https://your-api-gateway.com/v1",
     model: "deepseek-ai/DeepSeek-V3",
     docUrl: "",
     isAggregator: true
   },
   openrouter: {
-    name: "OpenRouter (全球模型聚合市场)",
+    name: "OpenRouter",
     baseUrl: "https://openrouter.ai/api/v1",
     model: "deepseek/deepseek-chat",
     docUrl: "https://openrouter.ai",
     isAggregator: true
   },
   siliconflow: {
-    name: "硅基流动 (SiliconFlow - 极速开源聚合平台)",
+    name: "硅基流动 SiliconFlow",
     baseUrl: "https://api.siliconflow.cn/v1",
     model: "deepseek-ai/DeepSeek-V3",
     docUrl: "https://cloud.siliconflow.cn",
     isAggregator: true
   },
   qwen: {
-    name: "阿里通义千问 (DashScope)",
+    name: "通义千问 DashScope",
     baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     model: "qwen-plus",
     docUrl: "https://dashscope.console.aliyun.com"
   },
   moonshot: {
-    name: "月之暗面 Kimi (Moonshot AI)",
+    name: "Kimi (Moonshot)",
     baseUrl: "https://api.moonshot.cn/v1",
     model: "moonshot-v1-8k",
     docUrl: "https://platform.moonshot.cn"
   },
   openai: {
-    name: "OpenAI (ChatGPT 官方)",
+    name: "OpenAI",
     baseUrl: "https://api.openai.com/v1",
     model: "gpt-4o-mini",
     docUrl: "https://platform.openai.com"
   },
   ollama: {
-    name: "Ollama (本地私有部署，免联网免密钥)",
+    name: "Ollama (本地部署)",
     baseUrl: "http://localhost:11434/v1",
     model: "qwen2.5:7b",
     docUrl: "https://ollama.com"
   },
   custom: {
-    name: "自定义兼容 API (支持第三方中转与私有模型)",
+    name: "自定义 OpenAI 兼容接口",
     baseUrl: "",
     model: "",
     docUrl: ""
@@ -350,46 +350,19 @@ class AiModelService {
     return headers;
   }
 
-  // 核心方法：使用配置的大模型对单个工具进行深度扫描与中文提炼
-  async generateToolSummary(tool) {
-    if (!this.isEnabled()) {
-      throw new Error("未启用或未配置 AI 模型 API");
-    }
+  // 识别各模型服务商的内容合规风控拦截（例如 DeepSeek 的 HTTP 400 "Content Exists Risk"）
+  isContentRiskError(status, errBody = "") {
+    if (status !== 400 && status !== 422 && status !== 451) return false;
+    return /content exists risk|content_filter|data_inspection_failed|inappropriate content|safety|moderation|sensitive/i.test(errBody);
+  }
 
+  // 统一 Chat Completions 调用封装，标准化超时与内容风控识别
+  async callChatCompletion(messages, { temperature = 0.5, maxTokens = 500, timeoutMs = 20000 } = {}) {
     const endpoint = this.normalizeEndpoint(this.config.baseUrl, "/chat/completions");
     const headers = this.buildChatHeaders();
 
-    const isArticle = !!(tool.isNews || tool.itemType === "news");
-    const systemPrompt = isArticle
-      ? `你是一位极具跨学科洞察力的资深中文主编，擅长将科技、人文、财经、全球时事与自然美学长文浓缩为直击本质的中文导读。
-请根据用户提供的文章/资讯信息，提炼专业、通顺、高信噪比的中文解读。
-
-请严格输出合法的 JSON 格式，绝不要添加任何额外的代码块标记、思考过程或多余文字，结构如下：
-{
-  "titleZh": "媒体来源或文章核心议题短标（6~10字以内）",
-  "summary": "2~3句精炼地道的中文核心提要（概括文章的核心论点、关键事实或独特思考视角，让人快速看懂价值）",
-  "highlights": ["3个核心看点短标签数组，包含对应Emoji，如：💡 核心洞察, 🌍 跨界视角, 📖 深度长文"]
-}`
-      : `你是一位顶尖的科技产品与开源项目分析专家。
-请根据用户提供的新产品或 GitHub 开源项目信息（名称、原始简介、README 精华、最新版本与链接），生成专业、地道、直击痛点的中文产品解析。
-
-请严格输出合法的 JSON 格式，绝不要添加任何额外的代码块标记、思考过程或多余文字，结构如下：
-{
-  "titleZh": "中文定位副标题（6~10字以内，如：AI 创客增长副驾、开源自动化测试代理）",
-  "summary": "2~3句精炼地道的中文功能与核心应用场景详解（说明解决什么痛点、核心功能亮点、适合什么用户群体，文笔通畅自然）",
-  "highlights": ["3个核心亮点短标签数组，包含对应Emoji，如：🤖 AI 智能副驾, 🚀 开源神器, ⚡ 效率提升"]
-}`;
-
-    const extraContext = [
-      tool.sourceName || tool.sourceType ? `来源: ${tool.sourceName || tool.sourceType}` : "",
-      tool.latestRelease ? `最新版本: ${tool.latestRelease}` : "",
-      tool.readmeSnippet ? `README 精华: ${tool.readmeSnippet}` : ""
-    ].filter(Boolean).join("\n");
-
-    const userPrompt = `名称: ${tool.name}\n原始简介: ${tool.rawDesc || tool.desc}${extraContext ? "\n" + extraContext : ""}\n官网链接: ${tool.url}`;
-
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 20000);
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
 
     try {
       const res = await fetch(endpoint, {
@@ -397,12 +370,9 @@ class AiModelService {
         headers,
         body: JSON.stringify({
           model: this.config.model || "deepseek-chat",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ],
-          temperature: 0.5,
-          max_tokens: 500
+          messages,
+          temperature,
+          max_tokens: maxTokens
         }),
         signal: ctrl.signal
       });
@@ -411,7 +381,15 @@ class AiModelService {
       if (!res.ok) {
         let errBody = "";
         try { errBody = await res.text(); } catch (e) {}
-        throw new Error(`API 错误 (HTTP ${res.status}): ${errBody.slice(0, 150)}`);
+        const isRisk = this.isContentRiskError(res.status, errBody);
+        const err = new Error(
+          isRisk
+            ? "内容触发大模型合规审核 (Content Exists Risk)"
+            : `API 错误 (HTTP ${res.status}): ${errBody.slice(0, 140)}`
+        );
+        err.status = res.status;
+        err.isContentRisk = isRisk;
+        throw err;
       }
 
       const json = await res.json();
@@ -419,36 +397,96 @@ class AiModelService {
       if (!content) {
         throw new Error("大模型未返回有效内容");
       }
-
-      const parsed = this.parseAiJson(content);
-      if (parsed && parsed.summary) {
-        return {
-          titleZh: parsed.titleZh || "",
-          summary: parsed.summary,
-          highlights: Array.isArray(parsed.highlights) ? parsed.highlights.slice(0, 3) : []
-        };
-      }
-
-      // 如果未能直接解析为 JSON，做语义后处理兜底
-      return {
-        titleZh: "",
-        summary: content.replace(/```[a-z]*\s*/gi, "").replace(/```/g, "").slice(0, 220).trim(),
-        highlights: ["✨ AI 智能解析", "🚀 今日发现", "💻 实用工具"]
-      };
+      return content;
     } catch (err) {
       clearTimeout(timer);
-      console.warn(`[AI Service] 提炼「${tool.name}」失败:`, err);
       throw err;
     }
   }
 
-  // 批量并发扫描工具与资讯列表（支持进度回调、增量落盘、复用进行中任务及真实结果统计）
+  // 核心方法：使用配置的大模型对单个工具或资讯进行深度扫描与中文提炼（遇风控自动降级重试）
+  async generateToolSummary(tool) {
+    if (!this.isEnabled()) {
+      throw new Error("未启用或未配置 AI 模型 API");
+    }
+
+    const isArticle = !!(tool.isNews || tool.itemType === "news");
+    const systemPrompt = isArticle
+      ? `你是中文资讯编辑。请根据提供的文章信息输出简洁、客观的中文导读。
+请严格输出合法 JSON（不要包含代码块或额外文字）：
+{
+  "titleZh": "4~9字中文核心议题标签",
+  "summary": "2~3句精炼客观的中文提要，概括核心观点与信息价值",
+  "highlights": ["最多3个简短中文关键词，不含Emoji"]
+}`
+      : `你是软件与开源产品分析编辑。请根据提供的项目信息生成简洁、准确的中文解析。
+请严格输出合法 JSON（不要包含代码块或额外文字）：
+{
+  "titleZh": "4~9字中文定位副标题",
+  "summary": "2~3句精炼的中文功能与场景说明，点明解决的痛点与适用人群",
+  "highlights": ["最多3个简短中文特性标签，不含Emoji"]
+}`;
+
+    const rawDescTrimmed = (tool.rawDesc || tool.desc || "").slice(0, 320);
+    const readmeTrimmed = (tool.readmeSnippet || "").slice(0, 320);
+    const extraContext = [
+      tool.sourceName || tool.sourceType ? `来源: ${tool.sourceName || tool.sourceType}` : "",
+      tool.latestRelease ? `版本: ${tool.latestRelease}` : "",
+      readmeTrimmed ? `README 摘录: ${readmeTrimmed}` : ""
+    ].filter(Boolean).join("\n");
+
+    const fullUserPrompt = `名称: ${tool.name}\n简介: ${rawDescTrimmed}${extraContext ? "\n" + extraContext : ""}`;
+
+    let content = "";
+    try {
+      content = await this.callChatCompletion(
+        [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: fullUserPrompt }
+        ],
+        { temperature: 0.45, maxTokens: 450, timeoutMs: 20000 }
+      );
+    } catch (err) {
+      // 若完整正文/README 触发服务商内容审核（例如安全工具红队术语或外媒敏感词），降级为仅标题+来源重试一次
+      if (err.isContentRisk) {
+        const safeTitle = (tool.name || "").replace(/\b(red-?team|attack|exploit|weapon|hack|intelligence|spy)\b/gi, "security").slice(0, 100);
+        const minimalPrompt = `请仅根据以下客观标题与分类生成中立的中文简介。\n标题: ${safeTitle}\n分类: ${tool.badge || tool.sourceType || "综合"}`;
+        content = await this.callChatCompletion(
+          [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: minimalPrompt }
+          ],
+          { temperature: 0.35, maxTokens: 320, timeoutMs: 18000 }
+        );
+      } else {
+        console.warn(`[AI Service] 提炼「${tool.name}」失败:`, err);
+        throw err;
+      }
+    }
+
+    const parsed = this.parseAiJson(content);
+    if (parsed && parsed.summary) {
+      return {
+        titleZh: parsed.titleZh || "",
+        summary: parsed.summary,
+        highlights: Array.isArray(parsed.highlights) ? parsed.highlights.slice(0, 3) : []
+      };
+    }
+
+    return {
+      titleZh: "",
+      summary: content.replace(/```[a-z]*\s*/gi, "").replace(/```/g, "").slice(0, 220).trim(),
+      highlights: []
+    };
+  }
+
+  // 批量并发扫描工具与资讯列表（支持进度回调、增量落盘、复用进行中任务及区分风控拦截与接口报错）
   async batchScanDailyTools(tools, optionsOrCallback = null) {
     if (!this.isEnabled()) {
-      return { total: 0, completed: 0, succeeded: 0, failed: 0, lastError: "未启用 AI 模型 API", skipped: true };
+      return { total: 0, completed: 0, succeeded: 0, failed: 0, riskSkipped: 0, lastError: "未启用 AI 模型 API", skipped: true };
     }
     if (!tools || !tools.length) {
-      return { total: 0, completed: 0, succeeded: 0, failed: 0, lastError: "", empty: true };
+      return { total: 0, completed: 0, succeeded: 0, failed: 0, riskSkipped: 0, lastError: "", empty: true };
     }
 
     const opts = typeof optionsOrCallback === "function"
@@ -458,7 +496,7 @@ class AiModelService {
     const onBatchComplete = typeof opts.onBatchComplete === "function" ? opts.onBatchComplete : null;
     const forceRescan = !!opts.forceRescan;
 
-    // 若后台自动提炼已在运行中，不静默返回，而是挂载进度监听并等待其完成
+    // 若后台自动提炼已在运行中，挂载进度监听并等待其完成
     if (this.isScanning && this.activeScanPromise) {
       const unsub = onProgress ? this.subscribeScanProgress((p) => onProgress(p.completed, p.total, p)) : () => {};
       try {
@@ -475,10 +513,10 @@ class AiModelService {
     const dailyCandidates = tools.filter(t => t.category === "daily" || t.isDaily);
     const targetTools = forceRescan
       ? dailyCandidates
-      : dailyCandidates.filter(t => !t.aiGenerated);
+      : dailyCandidates.filter(t => !t.aiGenerated && !t.aiRiskSkipped);
 
     if (!targetTools.length) {
-      return { total: 0, completed: 0, succeeded: 0, failed: 0, lastError: "", allAlreadyScanned: true };
+      return { total: 0, completed: 0, succeeded: 0, failed: 0, riskSkipped: 0, lastError: "", allAlreadyScanned: true };
     }
 
     this.isScanning = true;
@@ -487,6 +525,7 @@ class AiModelService {
       completed: 0,
       succeeded: 0,
       failed: 0,
+      riskSkipped: 0,
       lastError: ""
     };
     this.scanProgress = { ...stats };
@@ -503,7 +542,6 @@ class AiModelService {
 
     const runScan = async () => {
       try {
-        // 每次并发 4 个，兼顾提炼速度与聚合网关速率限制
         const concurrency = 4;
         for (let i = 0; i < targetTools.length; i += concurrency) {
           const batch = targetTools.slice(i, i + concurrency);
@@ -518,6 +556,7 @@ class AiModelService {
                   if (aiResult.titleZh) tool.titleZh = aiResult.titleZh;
                   if (aiResult.highlights && aiResult.highlights.length) tool.highlights = aiResult.highlights;
                   tool.aiGenerated = true;
+                  tool.aiRiskSkipped = false;
                   tool.aiModel = this.config.model || "AI";
                   stats.succeeded++;
                   batchSucceeded++;
@@ -526,9 +565,16 @@ class AiModelService {
                   stats.lastError = "模型返回空摘要";
                 }
               } catch (e) {
-                stats.failed++;
-                stats.lastError = e.message || "请求失败";
-                console.warn(`[AI Service] 单条「${tool.name}」扫描跳过:`, e.message);
+                if (e && e.isContentRisk) {
+                  // 内容审核拦截不计作接口故障，标记跳过并保留原文
+                  tool.aiRiskSkipped = true;
+                  stats.riskSkipped++;
+                  console.info(`[AI Service] 单条「${tool.name}」触发内容风控，保留原文`);
+                } else {
+                  stats.failed++;
+                  stats.lastError = e.message || "请求失败";
+                  console.warn(`[AI Service] 单条「${tool.name}」扫描跳过:`, e.message);
+                }
               } finally {
                 stats.completed++;
                 notifyProgress(tool);
@@ -552,10 +598,11 @@ class AiModelService {
   }
 
   // 按来源轮转采样多源内容，确保总览提示词覆盖全部订阅领域
-  sampleBalancedItemsForOverview(items, maxTotal = 28) {
+  sampleBalancedItemsForOverview(items, maxTotal = 24) {
     if (!Array.isArray(items) || !items.length) return [];
     const buckets = new Map();
     items.forEach(it => {
+      if (it && it.aiRiskSkipped) return;
       const key = it.sourceType || it.sourceName || "其他";
       if (!buckets.has(key)) buckets.set(key, []);
       buckets.get(key).push(it);
@@ -575,7 +622,19 @@ class AiModelService {
     return sampled;
   }
 
-  // 核心方法：对当前多源聚合内容生成「AI 跨界今日总览」
+  // 过滤易触发国内大模型合规审核的高风险新闻/攻防词条（仅在总览遇到 Content Exists Risk 时启用）
+  filterModerationSafeItems(items) {
+    const riskySources = new Set(["BBC 中文", "FT中文网"]);
+    const riskyKeywords = /(情报|间谍|政变|选举|抗议|制裁|军事|战争|冲突|袭|暴乱|红队|漏洞利用|attack|exploit|red-?team|weapon|spy|sanction|protest)/i;
+    return items.filter(it => {
+      if (!it || it.aiRiskSkipped) return false;
+      if (riskySources.has(it.sourceType)) return false;
+      const text = `${it.name || ""} ${it.descZh || it.desc || ""}`;
+      return !riskyKeywords.test(text);
+    });
+  }
+
+  // 核心方法：对当前多源聚合内容生成「AI 跨界今日总览」（内置 Content Exists Risk 自动隔离降级重试）
   async generateDailyOverview(items, mode = "all") {
     if (!this.isEnabled()) {
       throw new Error("未启用或未配置 AI 模型 API");
@@ -588,77 +647,81 @@ class AiModelService {
     }
 
     this.isGeneratingOverview = true;
-    const endpoint = this.normalizeEndpoint(this.config.baseUrl, "/chat/completions");
-    const headers = this.buildChatHeaders();
+    const modeLabel = mode === "news" ? "跨界资讯" : (mode === "tools" ? "创新工具" : "综合动态");
 
-    const sampled = this.sampleBalancedItemsForOverview(items, 28);
-    const sourceNames = Array.from(new Set(sampled.map(it => it.sourceType || it.sourceName).filter(Boolean)));
-    const modeLabel = mode === "news" ? "破茧跨界资讯" : (mode === "tools" ? "创新极客工具" : "综合全网动态");
-
-    const digestInput = sampled.map((it, i) => {
-      const src = it.sourceType || it.sourceName || "资讯";
-      const badge = it.badge ? `[${it.badge}]` : "";
-      const summary = (it.descZh || it.desc || "").slice(0, 85);
-      return `${i + 1}. (${src}${badge}) ${it.name} — ${summary}`;
-    }).join("\n");
-
-    const systemPrompt = `你是一位极具跨学科视野的中文主编，擅长将繁杂的多源订阅资讯浓缩成清晰、省时、有洞见的「今日总览简报」。
-用户开启了多个跨界订阅源（涵盖人文哲学、生活百科、全球视野、宏观财经、自然科学、艺术美学、科技极客与创新工具）。
-请对提供的今日「${modeLabel}」条目进行全局提炼与跨界梳理，严格输出合法 JSON（不要包含 Markdown 代码块或多余解释）：
+    const systemPrompt = `你是资深中文跨学科主编，擅长将多源订阅浓缩为客观、克制的今日简报。
+请对提供的今日「${modeLabel}」条目进行全局提炼，严格输出合法 JSON（不要包含代码块或多余文字）：
 {
-  "headline": "今日风向一句总括（16~28字，抓人眼球且准确）",
-  "overview": "2~3句全局综合导读，点明今日多领域交汇的核心话题、社会/科技/商业趋势或思想看点",
+  "headline": "今日风向一句总括（16~26字）",
+  "overview": "2~3句全局综合导读，点明今日多领域交汇的核心趋势或看点",
   "sectors": [
-    { "emoji": "🏛️", "domain": "领域归类(如 人文与社会/全球与财经/自然与美学/科技与工具)", "digest": "22~40字，精准概括该维度今日主要动态" }
+    { "domain": "领域归类（如 人文与社会 / 全球与财经 / 自然与美学 / 科技与工具）", "digest": "20~38字概括该维度今日动态" }
   ],
-  "topPick": "今日最值得破茧精读的 1 篇推荐（含标题关键词与推荐理由，35~60字）"
+  "topPick": "今日值得精读的 1 篇推荐与理由（30~55字）"
 }
-注意：sectors 数组请根据实际提供的条目生成 3~4 个最有代表性的板块，如某板块无对应条目可跳过或合并，不要虚构不存在的新闻。`;
+要求：sectors 输出 3~4 个板块，禁止使用 Emoji，禁止虚构未提供的内容。`;
 
-    const userPrompt = `本次覆盖订阅源 (${sourceNames.length} 个): ${sourceNames.join("、")}\n\n今日条目清单:\n${digestInput}`;
+    const runOverviewBatch = async (subset, titlesOnly = false) => {
+      const sourceNames = Array.from(new Set(subset.map(it => it.sourceType || it.sourceName).filter(Boolean)));
+      const digestInput = subset.map((it, i) => {
+        const src = it.sourceType || it.sourceName || "综合";
+        if (titlesOnly) {
+          return `${i + 1}. (${src}) ${(it.name || "").slice(0, 60)}`;
+        }
+        const summary = (it.descZh || it.desc || "").slice(0, 70);
+        return `${i + 1}. (${src}) ${it.name} — ${summary}`;
+      }).join("\n");
 
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 30000);
+      const userPrompt = `覆盖来源 (${sourceNames.length} 个): ${sourceNames.join("、")}\n\n条目清单:\n${digestInput}`;
+      const content = await this.callChatCompletion(
+        [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        { temperature: 0.4, maxTokens: 850, timeoutMs: 30000 }
+      );
+      return { content, sourceNames };
+    };
 
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          model: this.config.model || "deepseek-chat",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ],
-          temperature: 0.45,
-          max_tokens: 900
-        }),
-        signal: ctrl.signal
-      });
-      clearTimeout(timer);
+      const sampled = this.sampleBalancedItemsForOverview(items, 24);
+      let result = null;
+      let riskFiltered = false;
 
-      if (!res.ok) {
-        let errBody = "";
-        try { errBody = await res.text(); } catch (e) {}
-        throw new Error(`API 错误 (HTTP ${res.status}): ${errBody.slice(0, 150)}`);
+      try {
+        result = await runOverviewBatch(sampled, false);
+      } catch (err) {
+        if (!err.isContentRisk) throw err;
+        // 策略 1：剔除易触发审核的外媒政经/安全攻防条目并以标题摘要重试
+        riskFiltered = true;
+        const safeItems = this.filterModerationSafeItems(sampled);
+        const retryList = safeItems.length >= 4 ? safeItems : sampled.slice(0, 12);
+        try {
+          result = await runOverviewBatch(retryList, true);
+        } catch (err2) {
+          if (!err2.isContentRisk) throw err2;
+          // 策略 2：二分安全池，确保单条敏感词不会导致整份总览失败
+          const mid = Math.max(1, Math.floor(retryList.length / 2));
+          try {
+            result = await runOverviewBatch(retryList.slice(0, mid), true);
+          } catch (err3) {
+            if (!err3.isContentRisk) throw err3;
+            result = await runOverviewBatch(retryList.slice(mid), true);
+          }
+        }
       }
 
-      const json = await res.json();
-      const content = json?.choices?.[0]?.message?.content?.trim();
-      if (!content) {
-        throw new Error("大模型未返回有效总览内容");
-      }
-
-      const parsed = this.parseAiJson(content);
+      const parsed = this.parseAiJson(result.content);
       const overviewObj = {
         date: this.getTodayString(),
         mode,
         model: this.config.model || "AI",
         generatedAt: Date.now(),
-        sourceCount: sourceNames.length,
+        sourceCount: result.sourceNames.length,
         itemCount: items.length,
-        headline: (parsed && parsed.headline) ? parsed.headline : `今日${modeLabel}跨界总览`,
-        overview: (parsed && parsed.overview) ? parsed.overview : content.replace(/```[a-z]*\s*/gi, "").replace(/```/g, "").slice(0, 260).trim(),
+        riskFiltered,
+        headline: (parsed && parsed.headline) ? parsed.headline : `今日${modeLabel}总览`,
+        overview: (parsed && parsed.overview) ? parsed.overview : result.content.replace(/```[a-z]*\s*/gi, "").replace(/```/g, "").slice(0, 260).trim(),
         sectors: (parsed && Array.isArray(parsed.sectors)) ? parsed.sectors.slice(0, 4) : [],
         topPick: (parsed && parsed.topPick) ? parsed.topPick : ""
       };
@@ -666,7 +729,6 @@ class AiModelService {
       await this.saveOverview(mode, overviewObj);
       return overviewObj;
     } catch (err) {
-      clearTimeout(timer);
       console.warn("[AI Service] 生成今日总览失败:", err);
       throw err;
     } finally {

@@ -1,73 +1,85 @@
 /* ==========================================================================
-   Liquid Glass (苹果高级液态玻璃质感 2.0)
-   灵感源自 Apple visionOS 2 / iOS 18 / macOS Sequoia 空间流体光学设计
+   Liquid Glass (Apple iOS 26 / macOS Tahoe / visionOS 光学液态玻璃系统)
+   高透光折射 + 柔和曲面边缘高光 + 极简无彩色克制排印
    ========================================================================== */
 
 :root {
-  /* 基础字体族 */
-  --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  
-  /* 苹果液态玻璃核心材质系统 (Liquid Material System) */
-  --glass-surface-base: rgba(255, 255, 255, 0.14);
-  --glass-surface-hover: rgba(255, 255, 255, 0.22);
-  --glass-surface-active: rgba(255, 255, 255, 0.28);
-  
-  /* 双层折射高光边缘 (Caustic Rim Lighting) */
-  --glass-border: rgba(255, 255, 255, 0.25);
-  --glass-border-hover: rgba(255, 255, 255, 0.48);
-  --glass-border-bright: rgba(255, 255, 255, 0.7);
-  
-  /* 苹果多层景深与内凹反光投影 */
-  --glass-specular: 
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.65),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.15),
-    0 8px 32px -4px rgba(0, 0, 0, 0.3),
-    0 2px 6px rgba(0, 0, 0, 0.12);
+  --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 
-  --glass-specular-active: 
-    inset 0 1px 2px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.2),
-    0 16px 48px -6px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.35);
+  /* 液态玻璃光学材质层 (Optical Liquid Glass Material) */
+  --glass-surface-base: rgba(255, 255, 255, 0.11);
+  --glass-surface-hover: rgba(255, 255, 255, 0.18);
+  --glass-surface-active: rgba(255, 255, 255, 0.24);
+  --glass-tint-card: rgba(12, 14, 20, 0.24);
+  --glass-tint-card-hover: rgba(14, 16, 22, 0.32);
+  --glass-sheen: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.17) 0%,
+    rgba(255, 255, 255, 0.06) 42%,
+    rgba(255, 255, 255, 0.025) 72%,
+    rgba(255, 255, 255, 0.10) 100%
+  );
 
-  --glass-blur: blur(32px) saturate(210%) contrast(102%);
+  /* 光学边缘折射高光 (Caustic Specular Rim) */
+  --glass-border: rgba(255, 255, 255, 0.24);
+  --glass-border-hover: rgba(255, 255, 255, 0.44);
+  --glass-border-bright: rgba(255, 255, 255, 0.62);
 
-  /* 悬浮深色水晶玻璃材质 (用于弹出菜单、模态窗体) */
-  --glass-crystal-bg: rgba(18, 20, 27, 0.72);
-  --glass-crystal-border: rgba(255, 255, 255, 0.18);
-  --glass-crystal-shadow: 
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35),
-    0 24px 60px -10px rgba(0, 0, 0, 0.65),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
+  /* 双面玻璃厚度反光与自然景深投影 */
+  --glass-specular:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.52),
+    inset 1px 0 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.12),
+    0 10px 30px -8px rgba(0, 0, 0, 0.34),
+    0 2px 6px rgba(0, 0, 0, 0.14);
+
+  --glass-specular-active:
+    inset 0 1px 1px rgba(255, 255, 255, 0.68),
+    inset 1px 0 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.18),
+    0 18px 42px -10px rgba(0, 0, 0, 0.44),
+    0 4px 12px rgba(0, 0, 0, 0.18);
+
+  --glass-blur: blur(34px) saturate(195%) brightness(1.04);
+
+  /* 模态浮层水晶玻璃材质 (visionOS Translucent Sheet) */
+  --glass-crystal-bg: rgba(20, 22, 28, 0.54);
+  --glass-crystal-border: rgba(255, 255, 255, 0.26);
+  --glass-crystal-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.46),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    0 28px 68px -12px rgba(0, 0, 0, 0.58),
+    0 0 0 0.5px rgba(255, 255, 255, 0.12);
 
   /* 文字与排印层级 */
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.82);
-  --text-tertiary: rgba(255, 255, 255, 0.55);
+  --text-primary: rgba(255, 255, 255, 0.96);
+  --text-secondary: rgba(255, 255, 255, 0.78);
+  --text-tertiary: rgba(255, 255, 255, 0.54);
   --text-muted: rgba(255, 255, 255, 0.38);
+  --ink-dark: #111318;
 
-  /* 苹果电光高光强调色 */
+  /* 克制语义色（摒弃紫粉霓虹渐变） */
   --accent-blue: #0A84FF;
-  --accent-cyan: #5AC8FA;
+  --accent-cyan: rgba(255, 255, 255, 0.76);
   --accent-purple: #5E5CE6;
-  --accent-glow: rgba(10, 132, 255, 0.45);
-  --accent-gradient: linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%);
-  --accent-aurora: linear-gradient(135deg, #00C6FF 0%, #0072FF 50%, #9D50BB 100%);
-  
-  /* 圆角规范 (Apple Squircle) */
+  --accent-glow: rgba(255, 255, 255, 0.2);
+  --accent-gradient: rgba(255, 255, 255, 0.92);
+  --accent-aurora: rgba(255, 255, 255, 0.92);
+
+  /* 连续圆角规范 */
   --radius-xs: 8px;
   --radius-sm: 14px;
-  --radius-md: 20px;
-  --radius-lg: 26px;
-  --radius-xl: 34px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 30px;
   --radius-full: 9999px;
 
-  /* 阻尼动力学曲线 (Apple Spring Physics) */
+  /* 阻尼动力学曲线 */
   --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-spring: cubic-bezier(0.34, 1.35, 0.64, 1);
   --transition-fast: 0.18s var(--ease-apple);
   --transition-normal: 0.28s var(--ease-apple);
-  --transition-spring: 0.4s var(--ease-spring);
+  --transition-spring: 0.38s var(--ease-spring);
 }
 
 /* 全局重置与基础设定 */
@@ -177,39 +189,9 @@ body {
   transition: backdrop-filter 0.4s ease, background 0.4s ease;
 }
 
-/* 苹果 Vision 空间背景氛围呼吸光球 (提升通透折射感) */
+/* 移除人工蓝紫霓虹光球，让真实壁纸光线自然穿透液态玻璃 */
 .ambient-glow {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(120px);
-  pointer-events: none;
-  z-index: -1;
-  opacity: 0.35;
-  will-change: transform, opacity;
-  animation: ambientFloat 18s ease-in-out infinite alternate;
-}
-
-.ambient-glow-1 {
-  top: 15%;
-  left: 20%;
-  width: 520px;
-  height: 520px;
-  background: radial-gradient(circle, #0A84FF 0%, transparent 70%);
-}
-
-.ambient-glow-2 {
-  bottom: 20%;
-  right: 18%;
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(circle, #5E5CE6 0%, transparent 70%);
-  animation-delay: -9s;
-}
-
-@keyframes ambientFloat {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(40px, -30px) scale(1.12); }
-  100% { transform: translate(-30px, 35px) scale(0.94); }
+  display: none;
 }
 
 /* ==========================================================================
@@ -240,15 +222,16 @@ body {
   height: 1px;
 }
 
-/* 核心视图分段控制器 (Apple Segmented Glass Control) */
+/* 核心视图分段控制器 (Apple Liquid Glass Segmented Control) */
 .view-tabs {
   display: inline-flex;
   align-items: center;
-  padding: 5px;
-  background: rgba(0, 0, 0, 0.32);
+  padding: 4px;
+  background-color: rgba(14, 16, 22, 0.22);
+  background-image: var(--glass-sheen);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.26);
   box-shadow: var(--glass-specular);
   border-radius: var(--radius-full);
   position: relative;
@@ -257,9 +240,9 @@ body {
 .tab-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 24px;
-  border: none;
+  gap: 7px;
+  padding: 7px 20px;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-secondary);
   font-family: inherit;
@@ -275,7 +258,7 @@ body {
   width: 15px;
   height: 15px;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 1.9;
   fill: none;
   transition: transform var(--transition-fast);
 }
@@ -285,13 +268,14 @@ body {
 }
 
 .tab-btn.active {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.22);
-  backdrop-filter: blur(20px);
-  box-shadow: 
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.65),
-    0 4px 14px rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--ink-dark);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 3px 12px rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  font-weight: 600;
 }
 
 /* 顶栏右侧按钮 */
@@ -355,25 +339,25 @@ body {
   position: relative;
 }
 
-/* 搜索胶囊背部轻柔辉光 */
+/* 搜索胶囊背部柔和散射白光（去除紫蓝霓虹光晕） */
 .search-halo {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 80%;
-  height: 70%;
-  background: radial-gradient(circle, rgba(10, 132, 255, 0.22) 0%, rgba(94, 92, 230, 0.12) 60%, transparent 100%);
-  filter: blur(28px);
-  opacity: 0.65;
+  width: 78%;
+  height: 68%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 0%, transparent 72%);
+  filter: blur(32px);
+  opacity: 0.45;
   transition: opacity var(--transition-normal);
   pointer-events: none;
 }
 
 .search-section:focus-within .search-halo {
-  opacity: 1;
-  width: 90%;
-  height: 85%;
+  opacity: 0.85;
+  width: 88%;
+  height: 82%;
 }
 
 .search-bar-wrapper {
@@ -386,30 +370,31 @@ body {
   display: flex;
   align-items: center;
   width: 100%;
-  height: 62px;
-  padding: 0 10px 0 12px;
-  background: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(40px) saturate(220%) contrast(105%);
-  -webkit-backdrop-filter: blur(40px) saturate(220%) contrast(105%);
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.75),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.2),
-    0 16px 48px -8px rgba(0, 0, 0, 0.42),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
+  height: 60px;
+  padding: 0 9px 0 11px;
+  background-color: rgba(16, 18, 24, 0.2);
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.07) 48%, rgba(255, 255, 255, 0.12) 100%);
+  backdrop-filter: blur(42px) saturate(210%) brightness(1.06);
+  -webkit-backdrop-filter: blur(42px) saturate(210%) brightness(1.06);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.68),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16),
+    0 18px 46px -10px rgba(0, 0, 0, 0.38);
   border-radius: var(--radius-full);
   transition: all var(--transition-normal);
   position: relative;
 }
 
 .search-bar:focus-within {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.65);
-  box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.9),
-    0 24px 60px -8px rgba(0, 0, 0, 0.55),
-    0 0 0 4px rgba(10, 132, 255, 0.28);
-  transform: translateY(-2px);
+  background-color: rgba(16, 18, 24, 0.28);
+  border-color: rgba(255, 255, 255, 0.62);
+  box-shadow:
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.22),
+    0 24px 56px -10px rgba(0, 0, 0, 0.48),
+    0 0 0 3px rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
 }
 
 /* 搜索引擎选择器 */
@@ -475,16 +460,17 @@ body {
 /* 搜索输入框主体 */
 .search-input {
   flex: 1;
+  min-width: 0;
   height: 100%;
   margin: 0 14px;
   background: transparent;
   border: none;
   outline: none;
   font-family: inherit;
-  font-size: 16.5px;
+  font-size: 16px;
   font-weight: 400;
   color: #ffffff;
-  caret-color: var(--accent-cyan);
+  caret-color: #ffffff;
 }
 
 .search-input::placeholder {
@@ -537,13 +523,13 @@ body {
 }
 
 .search-submit-btn {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius-full);
-  background: var(--accent-gradient);
-  border: none;
-  box-shadow: 0 4px 16px var(--accent-glow);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 0 #ffffff, 0 4px 14px rgba(0, 0, 0, 0.22);
+  color: var(--ink-dark);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -553,16 +539,17 @@ body {
 }
 
 .search-submit-btn svg {
-  width: 19px;
-  height: 19px;
+  width: 18px;
+  height: 18px;
   stroke: currentColor;
-  stroke-width: 2.4;
+  stroke-width: 2.3;
   fill: none;
 }
 
 .search-submit-btn:hover {
-  transform: scale(1.06);
-  box-shadow: 0 6px 22px var(--accent-glow);
+  background: #ffffff;
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
 }
 
 .search-submit-btn:active {
@@ -637,6 +624,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 14px;
   width: 100%;
   max-width: 1100px;
   margin: 0 auto 18px;
@@ -647,6 +636,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  white-space: nowrap;
 }
 
 .shortcuts-heading {
@@ -655,40 +645,45 @@ body {
   color: #ffffff;
   letter-spacing: -0.2px;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
 }
 
 .shortcuts-count-pill {
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 500;
   padding: 3px 9px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .shortcuts-header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .glass-pill-action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 16px;
+  gap: 6px;
+  padding: 6.5px 14px;
   border-radius: var(--radius-full);
-  background: var(--glass-surface-base);
+  background-color: rgba(14, 16, 22, 0.22);
+  background-image: var(--glass-sheen);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-specular);
   color: var(--text-primary);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -706,12 +701,15 @@ body {
 }
 
 .glass-pill-action-btn.primary {
-  background: rgba(10, 132, 255, 0.35);
-  border-color: rgba(10, 132, 255, 0.6);
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(255, 255, 255, 0.95);
+  color: var(--ink-dark);
+  font-weight: 600;
 }
 
 .glass-pill-action-btn.primary:hover {
-  background: rgba(10, 132, 255, 0.55);
+  background: #ffffff;
+  color: var(--ink-dark);
 }
 
 /* ==========================================================================
@@ -999,10 +997,11 @@ body {
 }
 
 .category-pill.active {
-  color: #ffffff;
-  background: var(--accent-gradient);
-  border-color: transparent;
-  box-shadow: 0 4px 14px var(--accent-glow);
+  color: var(--ink-dark);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 0 #ffffff, 0 4px 14px rgba(0, 0, 0, 0.22);
+  font-weight: 600;
 }
 
 .tools-filter-wrapper {
@@ -1252,10 +1251,11 @@ body {
 
 .modal-card {
   width: 100%;
-  max-width: 520px;
-  background: var(--glass-crystal-bg);
-  backdrop-filter: blur(48px) saturate(220%);
-  -webkit-backdrop-filter: blur(48px) saturate(220%);
+  max-width: 540px;
+  background-color: var(--glass-crystal-bg);
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.07) 100%);
+  backdrop-filter: blur(56px) saturate(210%) brightness(1.03);
+  -webkit-backdrop-filter: blur(56px) saturate(210%) brightness(1.03);
   border: 1px solid var(--glass-crystal-border);
   box-shadow: var(--glass-crystal-shadow);
   border-radius: var(--radius-xl);
@@ -1573,22 +1573,29 @@ body {
 }
 
 .btn-primary {
-  padding: 10px 24px;
+  padding: 9px 22px;
   border-radius: var(--radius-full);
-  background: var(--accent-gradient);
-  border: none;
-  box-shadow: 0 4px 16px var(--accent-glow);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 0 #ffffff, 0 4px 14px rgba(0, 0, 0, 0.22);
+  color: var(--ink-dark);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   transition: all var(--transition-fast);
 }
 
 .btn-primary:hover {
+  background: #ffffff;
+  color: var(--ink-dark);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px var(--accent-glow);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
 }
 
 .btn-primary:active {
@@ -1643,9 +1650,9 @@ body {
 }
 
 .switch-toggle input:checked + .switch-slider {
-  background: var(--accent-gradient);
-  border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 12px var(--accent-glow);
+  background: #34C759;
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .switch-toggle input:checked + .switch-slider:before {
@@ -1728,32 +1735,31 @@ body {
 .ai-model-pill {
   display: inline-flex;
   align-items: center;
-  padding: 3px 9px;
+  padding: 3px 10px;
   font-size: 11.5px;
   font-family: inherit;
   font-weight: 500;
   border-radius: var(--radius-full);
-  background: rgba(10, 132, 255, 0.12);
-  border: 1px solid rgba(10, 132, 255, 0.32);
-  color: #5ac8fa;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
 }
 
 .ai-model-pill:hover {
-  background: rgba(10, 132, 255, 0.28);
-  border-color: rgba(10, 132, 255, 0.58);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.45);
   color: #ffffff;
   transform: translateY(-1px);
 }
 
-/* AI 专属炫彩渐变徽章 */
+/* AI 提炼克制玻璃徽章 */
 .tool-badge.ai-badge {
-  background: linear-gradient(135deg, rgba(175, 82, 222, 0.28), rgba(90, 200, 250, 0.28));
-  border: 1px solid rgba(175, 82, 222, 0.5);
-  color: #e599ff;
-  box-shadow: 0 0 10px rgba(175, 82, 222, 0.2);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.92);
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1787,48 +1793,48 @@ body {
 }
 
 .daily-nav-icon {
-  color: var(--accent-cyan);
-  filter: drop-shadow(0 2px 6px rgba(90, 200, 250, 0.3));
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .daily-nav-heading {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   color: #ffffff;
   letter-spacing: -0.2px;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
 .daily-nav-count {
   font-size: 11.5px;
-  padding: 3px 10px;
+  padding: 2.5px 9px;
   border-radius: var(--radius-full);
-  background: rgba(10, 132, 255, 0.16);
-  border: 1px solid rgba(10, 132, 255, 0.35);
-  color: #5ac8fa;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(16px);
+  color: var(--text-secondary);
   font-weight: 500;
-  letter-spacing: 0.2px;
 }
 
-/* 首页模式切换分段控制器 (🌟 综合动态 / 📰 破茧资讯 / 🛠️ 创新工具) */
+/* 首页模式切换分段控制器 (Apple Liquid Glass Segmented Pill) */
 .home-daily-main-tabs {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px;
-  background: rgba(0, 0, 0, 0.36);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  gap: 2px;
+  padding: 3.5px;
+  background-color: rgba(14, 16, 22, 0.24);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: var(--radius-full);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 4px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--glass-specular);
 }
 
 .main-tab-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 14px;
+  padding: 5px 15px;
   border-radius: var(--radius-full);
   border: 1px solid transparent;
   background: transparent;
@@ -1846,34 +1852,33 @@ body {
 }
 
 .main-tab-pill.active {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.38);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+  color: var(--ink-dark);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 0 #ffffff, 0 2px 10px rgba(0, 0, 0, 0.22);
+  font-weight: 600;
 }
 
-.main-tab-pill .main-tab-icon {
-  font-size: 13px;
-}
-
-/* 右侧精炼操作工具组 (刷新 / AI提炼 / 订阅源) */
+/* 右侧精炼操作工具组 (今日总览 / 刷新 / 提炼 / 订阅源) */
 .daily-nav-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .daily-tool-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 13px;
+  gap: 5px;
+  padding: 5.5px 12px;
   border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: var(--text-secondary);
+  background-color: rgba(14, 16, 22, 0.22);
+  background-image: var(--glass-sheen);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.88);
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
@@ -1883,8 +1888,8 @@ body {
 
 .daily-tool-btn:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.45);
   transform: translateY(-1px);
 }
 
@@ -1893,29 +1898,42 @@ body {
 }
 
 .daily-tool-btn-accent {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(56, 189, 248, 0.22));
-  border-color: rgba(167, 139, 250, 0.38);
-  color: #e9d5ff;
-}
-
-.daily-tool-btn-accent:hover {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.36), rgba(56, 189, 248, 0.34));
-  border-color: rgba(192, 132, 252, 0.6);
+  background-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.36);
   color: #ffffff;
 }
 
-/* ==================== AI 跨界今日总览简报卡片 ==================== */
+.daily-tool-btn-accent:hover {
+  background-color: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+}
+
+/* ==================== 跨界今日总览 (Apple Editorial Liquid Glass Sheet) ==================== */
 .ai-overview-card {
+  position: relative;
   margin-bottom: 18px;
-  padding: 16px 20px;
+  padding: 18px 22px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(145deg, rgba(139, 92, 246, 0.12), rgba(14, 165, 233, 0.08) 55%, rgba(15, 23, 42, 0.45));
-  backdrop-filter: blur(26px) saturate(160%);
-  -webkit-backdrop-filter: blur(26px) saturate(160%);
-  border: 1px solid rgba(192, 132, 252, 0.26);
-  border-top-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  background-color: var(--glass-tint-card);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-specular);
+  overflow: hidden;
   transition: all var(--transition-fast);
+}
+
+.ai-overview-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.58), transparent);
+  pointer-events: none;
 }
 
 .ai-overview-card.collapsed .ai-overview-body {
@@ -1940,15 +1958,15 @@ body {
 .ai-overview-spark {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   font-size: 12.5px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 3px 10px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(56, 189, 248, 0.26));
-  border: 1px solid rgba(192, 132, 252, 0.48);
-  color: #f3e8ff;
-  letter-spacing: 0.2px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  color: #ffffff;
+  letter-spacing: 0.1px;
 }
 
 .ai-overview-meta {
@@ -1963,11 +1981,11 @@ body {
 }
 
 .ai-ov-btn {
-  padding: 4px 12px;
+  padding: 4.5px 12px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.08);
-  color: #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-secondary);
   font-family: inherit;
   font-size: 11.5px;
   font-weight: 500;
@@ -1976,13 +1994,13 @@ body {
 }
 
 .ai-ov-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.42);
   color: #ffffff;
 }
 
 .ai-ov-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: wait;
 }
 
@@ -1994,17 +2012,18 @@ body {
 }
 
 .ai-overview-headline {
-  font-size: 15.5px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   color: #ffffff;
   line-height: 1.45;
-  letter-spacing: -0.1px;
+  letter-spacing: -0.2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
 }
 
 .ai-overview-summary {
   font-size: 13px;
   line-height: 1.65;
-  color: rgba(235, 235, 245, 0.86);
+  color: var(--text-secondary);
 }
 
 .ai-overview-sectors {
@@ -2014,10 +2033,11 @@ body {
 }
 
 .ai-sector-item {
-  padding: 10px 13px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -2025,27 +2045,27 @@ body {
 
 .ai-sector-domain {
   font-size: 12px;
-  font-weight: 700;
-  color: #bae6fd;
+  font-weight: 600;
+  color: #ffffff;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 
 .ai-sector-digest {
   font-size: 12px;
-  line-height: 1.5;
-  color: rgba(235, 235, 245, 0.78);
+  line-height: 1.55;
+  color: var(--text-secondary);
 }
 
 .ai-overview-toppick {
-  padding: 9px 13px;
-  border-radius: 10px;
-  background: rgba(251, 191, 36, 0.09);
-  border: 1px solid rgba(251, 191, 36, 0.25);
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   font-size: 12.5px;
-  line-height: 1.5;
-  color: #fef3c7;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .ai-overview-empty {
@@ -2055,7 +2075,7 @@ body {
   gap: 12px;
   flex-wrap: wrap;
   font-size: 12.5px;
-  color: rgba(235, 235, 245, 0.76);
+  color: var(--text-secondary);
 }
 
 /* 第 2 层：二级轻量化子分类筛选条 (不再嵌套笨重黑底胶囊) */
@@ -2080,12 +2100,14 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4.5px 12px;
+  padding: 5px 13px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.24);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background-color: rgba(14, 16, 22, 0.22);
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);
   color: var(--text-secondary);
   font-family: inherit;
   font-size: 12px;
@@ -2098,64 +2120,57 @@ body {
 
 .source-pill:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.28);
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.36);
 }
 
 .source-pill.active {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.42);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 2px 8px rgba(0, 0, 0, 0.25);
+  color: var(--ink-dark);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 0 #ffffff, 0 3px 12px rgba(0, 0, 0, 0.22);
+  font-weight: 600;
 }
 
+.source-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.source-pill-dot.dot-humanities { background: #c4b5fd; }
+.source-pill-dot.dot-world { background: #7dd3fc; }
+.source-pill-dot.dot-finance { background: #fcd34d; }
+.source-pill-dot.dot-science { background: #6ee7b7; }
+.source-pill-dot.dot-art { background: #f9a8d4; }
+.source-pill-dot.dot-tech { background: rgba(255, 255, 255, 0.72); }
+.source-pill-dot.dot-tools { background: #93c5fd; }
+.source-pill.active .source-pill-dot { opacity: 0.75; }
+
+/* 兼容旧微标类，统一收归极简液态玻璃克制色系 */
 .source-pill-icon {
-  width: 15px;
-  height: 15px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9.5px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1;
+  display: none;
 }
 
-.source-pill-icon.zhihu-icon { background: linear-gradient(135deg, #0066ff, #3897f0); }
-.source-pill-icon.aeon-icon { background: linear-gradient(135deg, #6b21a8, #9333ea); }
-.source-pill-icon.bbc-icon { background: linear-gradient(135deg, #0284c7, #38bdf8); }
-.source-pill-icon.ft-icon { background: linear-gradient(135deg, #d97706, #f59e0b); }
-.source-pill-icon.science-icon { background: linear-gradient(135deg, #059669, #10b981); }
-.source-pill-icon.art-icon { background: linear-gradient(135deg, #db2777, #ec4899); }
-.source-pill-icon.aihot-icon { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
-.source-pill-icon.solidot-icon { background: linear-gradient(135deg, #00796b, #00b4d8); }
-.source-pill-icon.ruan-icon { background: linear-gradient(135deg, #3f51b5, #7986cb); }
-.source-pill-icon.sspai-icon { background: #d71a1b; }
-.source-pill-icon.geek-icon { background: #00a4ff; }
-.source-pill-icon.ph-icon { background: #da552f; }
-.source-pill-icon.gh-icon { background: #6e40c9; }
-.source-pill-icon.hn-icon { background: #ff6600; }
-.source-pill-icon.v2-icon { background: #333333; border: 1px solid rgba(255, 255, 255, 0.3); }
-.source-pill-icon.custom-icon { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
-
-/* 资讯分类微标胶囊专属样式 */
 .source-pill.source-pill-news {
-  background: rgba(255, 75, 43, 0.1);
-  border-color: rgba(255, 75, 43, 0.25);
-  color: #ff9d84;
+  background-color: rgba(14, 16, 22, 0.22);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--text-secondary);
 }
 
 .source-pill.source-pill-news:hover {
-  background: rgba(255, 75, 43, 0.2);
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.36);
   color: #ffffff;
 }
 
 .source-pill.source-pill-news.active {
-  background: linear-gradient(135deg, rgba(255, 75, 43, 0.75), rgba(255, 65, 108, 0.75));
-  border-color: rgba(255, 120, 90, 0.6);
-  color: #ffffff;
-  box-shadow: 0 2px 10px rgba(255, 75, 43, 0.4);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.95);
+  color: var(--ink-dark);
+  box-shadow: inset 0 1px 0 #ffffff, 0 3px 12px rgba(0, 0, 0, 0.22);
 }
 
 .pill-type-tag {
@@ -2181,21 +2196,22 @@ body {
 }
 
 /* ==========================================================================
-   苹果液态玻璃宽卡片主体 (Apple visionOS 3-Tier Wide Crystal Glass Card)
-   去除右侧挤压式 4 按钮坚塔，采用顶栏/正文/底栏全宽优雅流式布局
+   苹果光学液态玻璃宽卡片 (Apple Liquid Glass Wide Card)
+   真实高透光玻璃折射 + 曲面顶部焦散高光 + 无彩边克制排版
    ========================================================================== */
 .wide-tool-card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 10px;
-  padding: 16px 18px;
-  min-height: 160px;
-  background: rgba(22, 25, 36, 0.84);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid var(--glass-crystal-border);
-  box-shadow: var(--glass-crystal-shadow);
+  gap: 12px;
+  padding: 18px 20px;
+  min-height: 162px;
+  background-color: var(--glass-tint-card);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-specular);
   border-radius: var(--radius-lg);
   cursor: pointer;
   position: relative;
@@ -2205,17 +2221,26 @@ body {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   contain: layout style paint;
-  transition: transform 0.22s var(--ease-apple), background-color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  transition: transform 0.24s var(--ease-apple), background-color 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+}
+
+.wide-tool-card::before,
+.wide-news-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.62), transparent);
+  pointer-events: none;
 }
 
 .wide-tool-card:hover {
-  transform: translateY(-3px);
-  background: rgba(28, 31, 44, 0.92);
-  border-color: rgba(255, 255, 255, 0.42);
-  box-shadow: 
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.45),
-    0 16px 36px -6px rgba(0, 0, 0, 0.45),
-    0 0 22px rgba(10, 132, 255, 0.2);
+  transform: translateY(-2px);
+  background-color: var(--glass-tint-card-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-specular-active);
 }
 
 /* 顶栏：图标 + 主标题 + 副标题 + 来源标签 + AI徽章 */
@@ -2270,9 +2295,10 @@ body {
 
 .card-title-name {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   color: #ffffff;
   letter-spacing: -0.2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2280,12 +2306,11 @@ body {
 
 .card-title-sub {
   font-size: 12px;
-  color: var(--accent-cyan);
-  font-weight: 500;
+  color: var(--text-tertiary);
+  font-weight: 400;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  opacity: 0.95;
 }
 
 .card-head-right {
@@ -2296,76 +2321,67 @@ body {
 }
 
 .source-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 11px;
-  font-weight: 600;
-  padding: 2.5px 8px;
-  border-radius: 6px;
-  line-height: 1.25;
+  font-weight: 500;
+  padding: 2.5px 9px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.86);
+  line-height: 1.3;
   white-space: nowrap;
 }
 
-.source-tag.ph {
-  background: rgba(218, 85, 47, 0.18);
-  color: #ff7654;
-  border: 1px solid rgba(218, 85, 47, 0.4);
+.source-tag::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.65);
 }
 
-.source-tag.gh {
-  background: rgba(110, 64, 201, 0.2);
-  color: #c4a7f7;
-  border: 1px solid rgba(110, 64, 201, 0.4);
-}
-
-.source-tag.hn {
-  background: rgba(255, 102, 0, 0.2);
-  color: #ff9d5c;
-  border: 1px solid rgba(255, 102, 0, 0.4);
-}
-
-.source-tag.v2 {
-  background: rgba(51, 160, 44, 0.2);
-  color: #6ee67b;
-  border: 1px solid rgba(51, 160, 44, 0.4);
-}
-
-.source-tag.aihot {
-  background: rgba(255, 75, 43, 0.2);
-  color: #ff7654;
-  border: 1px solid rgba(255, 75, 43, 0.45);
-}
+.source-tag.ph::before { background: #fb923c; }
+.source-tag.gh::before { background: #c4b5fd; }
+.source-tag.hn::before { background: #fdba74; }
+.source-tag.v2::before { background: #86efac; }
+.source-tag.aihot::before { background: #fca5a5; }
 
 .card-ai-badge {
   font-size: 10.5px;
-  font-weight: 700;
+  font-weight: 500;
   padding: 2px 7px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, rgba(175, 82, 222, 0.3), rgba(90, 200, 250, 0.3));
-  border: 1px solid rgba(175, 82, 222, 0.5);
-  color: #e599ff;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: rgba(255, 255, 255, 0.88);
   letter-spacing: 0.2px;
 }
 
 /* 中栏：全宽两行中文描述，字体舒适通透 */
 .card-body-desc {
   font-size: 13px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.62;
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-word;
-  min-height: 41px;
+  min-height: 42px;
 }
 
-/* 底栏：左侧域名与高光标签，右侧轻量化横排三按钮 */
+/* 底栏：左侧域名与高光标签，右侧轻量化横排按钮 */
 .card-foot-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 10px;
   margin-top: 2px;
 }
@@ -2374,14 +2390,15 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
   min-width: 0;
   flex: 1;
 }
 
 .card-chip-domain {
   font-size: 11px;
-  color: var(--accent-cyan);
+  color: var(--text-tertiary);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -2389,10 +2406,10 @@ body {
 .card-chip-highlight {
   font-size: 11px;
   padding: 2px 7px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--text-tertiary);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  color: rgba(255, 255, 255, 0.72);
   white-space: nowrap;
 }
 
@@ -2413,7 +2430,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 11px;
+  padding: 4.5px 11px;
   font-size: 11.5px;
   font-family: inherit;
   font-weight: 500;
@@ -2425,75 +2442,74 @@ body {
 }
 
 .card-btn-save {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: var(--text-secondary);
 }
 
 .card-btn-save:hover {
-  background: rgba(255, 204, 0, 0.16);
-  border-color: rgba(255, 204, 0, 0.45);
-  color: #ffcc00;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.36);
+  color: #ffffff;
 }
 
 .card-btn-save.saved {
-  background: rgba(255, 204, 0, 0.22);
-  border-color: rgba(255, 204, 0, 0.55);
-  color: #ffd60a;
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #ffffff;
 }
 
 .card-btn-add {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--text-secondary);
 }
 
 .card-btn-add:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.36);
+  color: #ffffff;
 }
 
 .card-btn-add.added {
-  background: rgba(48, 209, 88, 0.2);
-  border-color: rgba(48, 209, 88, 0.45);
-  color: #30d158;
+  background: rgba(52, 199, 89, 0.18);
+  border-color: rgba(52, 199, 89, 0.4);
+  color: #6ee7b7;
 }
 
 .card-btn-visit {
-  background: var(--accent-gradient);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  color: var(--ink-dark);
   font-weight: 600;
-  padding: 4px 13px;
-  box-shadow: 0 2px 8px var(--accent-glow);
+  padding: 4.5px 13px;
+  box-shadow: inset 0 1px 0 #ffffff, 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
 .card-btn-visit:hover {
+  background: #ffffff;
+  color: var(--ink-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px var(--accent-glow);
-  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.26);
 }
 
 /* ==========================================================================
-   破茧资讯卡片 (Editorial News Intelligence Card)
-   统一 3 层结构与外框高度，与创新工具卡片保持极佳视觉律动
+   破茧资讯卡片 (Editorial Liquid Glass News Card)
+   与工具卡片统一光学玻璃语言，去除生硬红竖条与彩色大背景
    ========================================================================== */
 .wide-news-card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 10px;
-  padding: 16px 18px;
-  min-height: 160px;
-  background: rgba(24, 25, 36, 0.85);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid rgba(255, 75, 43, 0.28);
-  border-left: 3.5px solid #ff4b2b;
-  box-shadow: 
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.25),
-    0 12px 30px -4px rgba(0, 0, 0, 0.4),
-    0 0 24px rgba(255, 75, 43, 0.08);
+  gap: 12px;
+  padding: 18px 20px;
+  min-height: 162px;
+  background-color: var(--glass-tint-card);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-specular);
   border-radius: var(--radius-lg);
   cursor: pointer;
   position: relative;
@@ -2503,18 +2519,14 @@ body {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   contain: layout style paint;
-  transition: transform 0.22s var(--ease-apple), background-color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  transition: transform 0.24s var(--ease-apple), background-color 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
 }
 
 .wide-news-card:hover {
-  transform: translateY(-3px);
-  background: rgba(30, 31, 46, 0.94);
-  border-color: rgba(255, 75, 43, 0.48);
-  border-left-color: #ff6b4a;
-  box-shadow: 
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.35),
-    0 16px 36px -4px rgba(0, 0, 0, 0.5),
-    0 0 28px rgba(255, 75, 43, 0.16);
+  transform: translateY(-2px);
+  background-color: var(--glass-tint-card-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-specular-active);
 }
 
 .news-card-top {
@@ -2535,60 +2547,42 @@ body {
 .news-type-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 11px;
-  font-weight: 700;
-  padding: 2.5px 8px;
+  font-weight: 500;
+  padding: 2.5px 9px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, rgba(255, 65, 108, 0.25), rgba(255, 75, 43, 0.25));
-  color: #ff6b4a;
-  border: 1px solid rgba(255, 75, 43, 0.45);
-  letter-spacing: 0.2px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   white-space: nowrap;
 }
 
-.news-type-badge.domain-humanities {
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.22), rgba(107, 33, 168, 0.22));
-  color: #d8b4fe;
-  border-color: rgba(192, 132, 252, 0.45);
+.news-type-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  flex-shrink: 0;
 }
 
-.news-type-badge.domain-world {
-  background: linear-gradient(135deg, rgba(2, 132, 199, 0.22), rgba(56, 189, 248, 0.22));
-  color: #7dd3fc;
-  border-color: rgba(56, 189, 248, 0.45);
-}
-
-.news-type-badge.domain-finance {
-  background: linear-gradient(135deg, rgba(217, 119, 6, 0.22), rgba(245, 158, 11, 0.22));
-  color: #fcd34d;
-  border-color: rgba(251, 191, 36, 0.45);
-}
-
-.news-type-badge.domain-science {
-  background: linear-gradient(135deg, rgba(5, 150, 105, 0.22), rgba(16, 185, 129, 0.22));
-  color: #6ee7b7;
-  border-color: rgba(52, 211, 153, 0.45);
-}
-
-.news-type-badge.domain-art {
-  background: linear-gradient(135deg, rgba(219, 39, 119, 0.22), rgba(236, 72, 153, 0.22));
-  color: #f9a8d4;
-  border-color: rgba(244, 114, 182, 0.45);
-}
+.news-type-badge.domain-humanities::before { background: #c4b5fd; }
+.news-type-badge.domain-world::before { background: #7dd3fc; }
+.news-type-badge.domain-finance::before { background: #fcd34d; }
+.news-type-badge.domain-science::before { background: #6ee7b7; }
+.news-type-badge.domain-art::before { background: #f9a8d4; }
+.news-type-badge.domain-tech::before { background: #93c5fd; }
 
 .news-origin-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
   font-size: 11.5px;
-  font-weight: 500;
-  padding: 2px 8px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #e5e5ea;
+  font-weight: 400;
+  color: var(--text-tertiary);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .news-card-meta-right {
@@ -2597,7 +2591,7 @@ body {
   gap: 8px;
   margin-left: auto;
   font-size: 11.5px;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -2605,18 +2599,18 @@ body {
 .news-heat-badge {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  color: #ff9f0a;
-  font-weight: 600;
+  color: var(--text-tertiary);
+  font-weight: 500;
 }
 
 .news-card-headline {
   margin: 0;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 15.5px;
+  font-weight: 600;
   line-height: 1.45;
   color: #ffffff;
   letter-spacing: -0.2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2625,39 +2619,23 @@ body {
 
 .wide-news-card:hover .news-card-headline {
   color: #ffffff;
-  text-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
 }
 
 .news-card-summary {
   font-size: 13px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.62;
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 41px;
+  min-height: 42px;
 }
 
 .news-card-reason {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 6px 10px;
-  background: rgba(10, 132, 255, 0.08);
-  border-left: 2.5px solid #0A84FF;
-  border-radius: 4px;
-  font-size: 11.5px;
-  line-height: 1.5;
-  color: #98caff;
-  margin-top: -2px;
-}
-
-.news-card-reason .reason-label {
-  font-weight: 700;
-  color: #5ac8fa;
-  white-space: nowrap;
+  display: none;
 }
 
 .news-card-footer {
@@ -2667,14 +2645,15 @@ body {
   gap: 10px;
   margin-top: 2px;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .news-card-tags {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
   min-width: 0;
   flex: 1;
 }
@@ -2682,10 +2661,10 @@ body {
 .news-tag-chip {
   font-size: 11px;
   padding: 2px 7px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--text-tertiary);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  color: rgba(255, 255, 255, 0.72);
   white-space: nowrap;
 }
 
@@ -2701,34 +2680,34 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 13px;
+  padding: 4.5px 13px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, rgba(255, 75, 43, 0.85), rgba(255, 65, 108, 0.85));
-  border: 1px solid rgba(255, 120, 90, 0.5);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  color: var(--ink-dark);
   font-size: 11.5px;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
   transition: all var(--transition-fast);
-  box-shadow: 0 2px 8px rgba(255, 75, 43, 0.35);
+  box-shadow: inset 0 1px 0 #ffffff, 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
 .news-btn-read:hover {
-  background: linear-gradient(135deg, #ff4b2b, #ff416c);
+  background: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(255, 75, 43, 0.5);
-  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.26);
+  color: var(--ink-dark);
 }
 
 .news-btn-save {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 4.5px 10px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: var(--text-secondary);
   font-size: 11.5px;
   font-weight: 500;
@@ -2737,21 +2716,21 @@ body {
 }
 
 .news-btn-save:hover {
-  background: rgba(255, 204, 0, 0.16);
-  border-color: rgba(255, 204, 0, 0.45);
-  color: #ffcc00;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.36);
+  color: #ffffff;
 }
 
 .news-btn-save.saved {
-  background: rgba(255, 204, 0, 0.22);
-  border-color: rgba(255, 204, 0, 0.55);
-  color: #ffd60a;
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #ffffff;
 }
 
 .news-btn-detail {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  padding: 4.5px 10px;
   border-radius: var(--radius-full);
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -2763,9 +2742,9 @@ body {
 }
 
 .news-btn-detail:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.14);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.36);
 }
 
 .setting-section:last-child {
@@ -2877,16 +2856,19 @@ body {
   bottom: 28px;
   left: 50%;
   transform: translateX(-50%) translateY(30px);
-  padding: 10px 22px;
-  background: rgba(20, 22, 28, 0.92);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 10px 20px;
+  background-color: rgba(20, 22, 28, 0.66);
+  background-image: var(--glass-sheen);
+  backdrop-filter: blur(42px) saturate(200%);
+  -webkit-backdrop-filter: blur(42px) saturate(200%);
   border: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--glass-specular);
   border-radius: var(--radius-full);
   color: #ffffff;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 500;
+  line-height: 1.45;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -3052,8 +3034,8 @@ body {
   height: 18px;
   padding: 0 5px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #ff9f0a, #ff6b00);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink-dark);
   font-size: 11px;
   font-weight: 700;
   line-height: 1;
@@ -3187,9 +3169,9 @@ body {
 }
 
 .archive-pill.active {
-  background: rgba(10, 132, 255, 0.28);
-  border-color: rgba(10, 132, 255, 0.6);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.95);
+  color: var(--ink-dark);
   font-weight: 600;
 }
 
@@ -3434,10 +3416,11 @@ body {
 
 .source-card-tag {
   font-size: 10.5px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: rgba(10, 132, 255, 0.15);
-  color: #5ac8fa;
+  padding: 1.5px 7px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -3554,29 +3537,45 @@ body {
 /* 响应式断点 */
 @media (max-width: 768px) {
   .app-wrapper {
-    padding: 16px 18px 24px;
+    padding: 16px 16px 24px;
   }
   .top-nav {
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
     height: auto;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+  }
+  .top-left-spacer {
+    display: none;
   }
   .view-tabs {
     order: 3;
     width: 100%;
     justify-content: center;
   }
+  .search-bar {
+    height: 52px;
+    padding: 0 6px 0 8px;
+  }
+  .search-input {
+    margin: 0 8px;
+    font-size: 14.5px;
+  }
+  .search-submit-btn {
+    width: 38px;
+    height: 38px;
+  }
   .shortcuts-grid {
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 16px 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px 8px;
   }
   .shortcut-card {
-    padding: 14px 8px 10px;
+    width: auto;
   }
   .shortcut-icon-wrapper {
-    width: 46px;
-    height: 46px;
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
   }
   .tools-grid {
     grid-template-columns: 1fr;
