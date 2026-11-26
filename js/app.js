@@ -352,6 +352,65 @@ class AppController {
     const cards = [];
     const fallbackIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='0.75' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20'/%3E%3Cpath d='M2 12h20'/%3E%3C/svg%3E";
     const stripLeadingEmoji = (str) => String(str || "").replace(/^[\u{1F1E0}-\u{1F1FF}\u{1F300}-\u{1FAFF}\u2600-\u27BF\uFE0F\u200D⭐★✦✨🔥💡🚀⚡💻🛠️🤖📚🌍📈🧬🎨📖🎙️🔗🕒📱🌱🌐🔭🌈📡\s]+/u, "").trim();
+    const sparkleSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m12 3-1.8 5.4a2 2 0 0 1-1.3 1.3L3.5 11.5l5.4 1.8a2 2 0 0 1 1.3 1.3L12 20l1.8-5.4a2 2 0 0 1 1.3-1.3l5.4-1.8-5.4-1.8a2 2 0 0 1-1.3-1.3L12 3z"/></svg>`;
+    const inferDomainStyle = (tool) => {
+      if (tool.domainStyle) return tool.domainStyle;
+      const src = tool.sourceType || "";
+      if (src === "知乎日报" || src === "Aeon 人文") return "humanities";
+      if (src === "BBC 中文") return "world";
+      if (src === "FT中文网") return "finance";
+      if (src === "自然科学") return "science";
+      if (src === "艺术美学") return "art";
+      return "tech";
+    };
+    const buildAiStatusHtml = (tool) => {
+      if (tool.aiGenerated) {
+        return `<span class="card-ai-badge" title="已由 ${tool.aiModel || "AI"} 深度提炼">${sparkleSvg}AI 已提炼</span>`;
+      }
+      if (tool.aiRiskSkipped) {
+        return `<span class="card-ai-raw-tag" title="触发模型合规审核，保留原文">原文</span>`;
+      }
+      return `<button type="button" class="card-ai-pending-btn" title="点击立即调用 AI 提炼本条">未提炼</button>`;
+    };
+    const bindInlineAiDistill = (cardEl, tool) => {
+      const pendingBtn = cardEl.querySelector(".card-ai-pending-btn");
+      if (!pendingBtn) return;
+      pendingBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (!window.aiService || !window.aiService.isEnabled()) {
+          this.openAiSettingsSection();
+          return;
+        }
+        pendingBtn.disabled = true;
+        pendingBtn.textContent = "提炼中...";
+        try {
+          const aiResult = await window.aiService.generateToolSummary(tool);
+          if (aiResult && aiResult.summary) {
+            tool.descZh = aiResult.summary;
+            tool.desc = aiResult.summary;
+            if (aiResult.titleZh) tool.titleZh = aiResult.titleZh;
+            if (aiResult.highlights && aiResult.highlights.length) tool.highlights = aiResult.highlights;
+            tool.aiGenerated = true;
+            tool.aiRiskSkipped = false;
+            tool.aiModel = window.aiService.getModelName();
+            if (window.dailyToolsSyncEngine) await window.dailyToolsSyncEngine.saveToCache();
+            this.renderHomeWideCards();
+            this.showToast(`已完成「${tool.name.slice(0, 18)}」提炼`);
+          }
+        } catch (err) {
+          if (err && err.isContentRisk) {
+            tool.aiRiskSkipped = true;
+            if (window.dailyToolsSyncEngine) await window.dailyToolsSyncEngine.saveToCache();
+            this.renderHomeWideCards();
+            this.showToast("该条目触发模型内容审核，已保留原文");
+          } else {
+            pendingBtn.disabled = false;
+            pendingBtn.textContent = "未提炼";
+            this.showToast(`提炼失败：${err.message}`);
+          }
+        }
+      });
+    };
 
     list.forEach(tool => {
       const card = document.createElement("div");
@@ -359,12 +418,13 @@ class AppController {
       const isAlreadyAdded = window.shortcutsManager.hasShortcut(tool.url);
       const isSaved = window.archiveManager ? window.archiveManager.isSaved(tool.url) : false;
       const isNewsItem = tool.isNews || tool.itemType === "news" || tool.sourceType === "AIHot";
+      const aiStateClass = tool.aiGenerated ? "is-ai-distilled" : "is-raw-item";
 
-      // ================= 资讯源排版模式 (克制编辑风液态玻璃卡片) =================
+      // ================= 资讯源排版模式 (染色液态玻璃分类 + 已提炼/未提炼清晰区分) =================
       if (isNewsItem) {
-        card.className = "wide-news-card";
+        card.className = `wide-news-card ${aiStateClass}`;
         const mediaSource = tool.sourceName || tool.titleZh || tool.sourceType || "资讯";
-        const domainCls = tool.domainStyle ? `domain-${tool.domainStyle}` : "domain-tech";
+        const domainCls = `domain-${inferDomainStyle(tool)}`;
         const tagsHtml = (tool.highlights || [])
           .slice(0, 2)
           .map(h => stripLeadingEmoji(h))
@@ -377,9 +437,9 @@ class AppController {
             <div class="news-card-meta-left">
               <span class="news-type-badge ${domainCls}">${tool.badge || "资讯"}</span>
               <span class="news-origin-pill">${mediaSource}</span>
-              ${tool.aiGenerated ? `<span class="card-ai-badge">AI 摘要</span>` : ""}
             </div>
             <div class="news-card-meta-right">
+              ${buildAiStatusHtml(tool)}
               <span>${tool.pubDate || "今日"}</span>
             </div>
           </div>
@@ -404,10 +464,12 @@ class AppController {
 
         // 点击卡片直接打开内参详情模态窗
         card.addEventListener("click", (e) => {
-          if (e.target.closest(".news-btn-read") || e.target.closest(".news-btn-save")) return;
+          if (e.target.closest(".news-btn-read") || e.target.closest(".news-btn-save") || e.target.closest(".card-ai-pending-btn")) return;
           e.preventDefault();
           this.openToolDetailModal(tool);
         });
+
+        bindInlineAiDistill(card, tool);
 
         // 绑定稍后阅读按钮
         const saveBtn = card.querySelector(".news-btn-save");
@@ -434,7 +496,7 @@ class AppController {
       }
 
       // ================= 工具/项目源排版模式 (Product Hunt, GitHub, HN, V2EX) =================
-      card.className = "wide-tool-card";
+      card.className = `wide-tool-card ${aiStateClass}`;
       const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
       let sourceTagClass = "ph";
@@ -464,7 +526,7 @@ class AppController {
           </div>
           <div class="card-head-right">
             <span class="source-tag ${sourceTagClass}">${tool.sourceType || "工具"}</span>
-            ${tool.aiGenerated ? `<span class="card-ai-badge" title="AI 摘要">AI</span>` : ""}
+            ${buildAiStatusHtml(tool)}
           </div>
         </div>
 
@@ -492,12 +554,14 @@ class AppController {
 
       // 点击卡片直接打开详情模态窗
       card.addEventListener("click", (e) => {
-        if (e.target.closest(".card-btn-add") || e.target.closest(".card-btn-visit") || e.target.closest(".card-btn-save")) {
+        if (e.target.closest(".card-btn-add") || e.target.closest(".card-btn-visit") || e.target.closest(".card-btn-save") || e.target.closest(".card-ai-pending-btn")) {
           return;
         }
         e.preventDefault();
         this.openToolDetailModal(tool);
       });
+
+      bindInlineAiDistill(card, tool);
 
       // 绑定存入稍后使用暂存箱事件
       const saveBtn = card.querySelector(".card-btn-save");

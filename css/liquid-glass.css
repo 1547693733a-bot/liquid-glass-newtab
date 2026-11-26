@@ -10,11 +10,11 @@
   --glass-surface-base: rgba(255, 255, 255, 0.11);
   --glass-surface-hover: rgba(255, 255, 255, 0.18);
   --glass-surface-active: rgba(255, 255, 255, 0.24);
-  --glass-tint-card: rgba(12, 14, 20, 0.24);
-  --glass-tint-card-hover: rgba(14, 16, 22, 0.32);
+  --glass-tint-card: rgba(12, 14, 20, 0.34);
+  --glass-tint-card-hover: rgba(14, 16, 22, 0.44);
   --glass-sheen: linear-gradient(
     155deg,
-    rgba(255, 255, 255, 0.17) 0%,
+    rgba(255, 255, 255, 0.18) 0%,
     rgba(255, 255, 255, 0.06) 42%,
     rgba(255, 255, 255, 0.025) 72%,
     rgba(255, 255, 255, 0.10) 100%
@@ -2133,21 +2133,22 @@ body {
 }
 
 .source-pill-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
-  opacity: 0.9;
+  opacity: 0.95;
+  box-shadow: 0 0 6px currentColor;
 }
 
-.source-pill-dot.dot-humanities { background: #c4b5fd; }
-.source-pill-dot.dot-world { background: #7dd3fc; }
-.source-pill-dot.dot-finance { background: #fcd34d; }
-.source-pill-dot.dot-science { background: #6ee7b7; }
-.source-pill-dot.dot-art { background: #f9a8d4; }
-.source-pill-dot.dot-tech { background: rgba(255, 255, 255, 0.72); }
-.source-pill-dot.dot-tools { background: #93c5fd; }
-.source-pill.active .source-pill-dot { opacity: 0.75; }
+.source-pill-dot.dot-humanities { background: #c084fc; color: rgba(192, 132, 252, 0.55); }
+.source-pill-dot.dot-world { background: #38bdf8; color: rgba(56, 189, 248, 0.55); }
+.source-pill-dot.dot-finance { background: #fbbf24; color: rgba(251, 191, 36, 0.55); }
+.source-pill-dot.dot-science { background: #34d399; color: rgba(52, 211, 153, 0.55); }
+.source-pill-dot.dot-art { background: #f472b6; color: rgba(244, 114, 182, 0.55); }
+.source-pill-dot.dot-tech { background: #60a5fa; color: rgba(96, 165, 250, 0.55); }
+.source-pill-dot.dot-tools { background: #fb923c; color: rgba(251, 146, 60, 0.55); }
+.source-pill.active .source-pill-dot { box-shadow: none; }
 
 /* 兼容旧微标类，统一收归极简液态玻璃克制色系 */
 .source-pill-icon {
@@ -2325,39 +2326,149 @@ body {
   align-items: center;
   gap: 5px;
   font-size: 11px;
-  font-weight: 500;
-  padding: 2.5px 9px;
+  font-weight: 600;
+  padding: 3px 9px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: rgba(255, 255, 255, 0.86);
-  line-height: 1.3;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  line-height: 1.25;
   white-space: nowrap;
 }
 
 .source-tag::before {
   content: "";
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.75);
 }
 
+/* Apple Tinted Liquid Glass 平台色系（通透染色玻璃，一眼分辨来源） */
+.source-tag.ph {
+  background: rgba(234, 88, 12, 0.28);
+  border-color: rgba(251, 146, 60, 0.5);
+  color: #ffedd5;
+}
 .source-tag.ph::before { background: #fb923c; }
-.source-tag.gh::before { background: #c4b5fd; }
-.source-tag.hn::before { background: #fdba74; }
-.source-tag.v2::before { background: #86efac; }
-.source-tag.aihot::before { background: #fca5a5; }
 
+.source-tag.gh {
+  background: rgba(99, 102, 241, 0.28);
+  border-color: rgba(165, 180, 252, 0.5);
+  color: #e0e7ff;
+}
+.source-tag.gh::before { background: #a5b4fc; }
+
+.source-tag.hn {
+  background: rgba(245, 158, 11, 0.26);
+  border-color: rgba(252, 211, 77, 0.48);
+  color: #fef3c7;
+}
+.source-tag.hn::before { background: #fbbf24; }
+
+.source-tag.v2 {
+  background: rgba(20, 184, 166, 0.26);
+  border-color: rgba(94, 234, 212, 0.46);
+  color: #ccfbf1;
+}
+.source-tag.v2::before { background: #2dd4bf; }
+
+.source-tag.aihot {
+  background: rgba(244, 63, 94, 0.26);
+  border-color: rgba(253, 164, 175, 0.48);
+  color: #ffe4e6;
+}
+.source-tag.aihot::before { background: #fb7185; }
+
+/* AI 已提炼 vs 未提炼 视觉区分（清晰一目了然，保持液态玻璃高级克制感） */
 .card-ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2.5px 9px;
+  border-radius: var(--radius-full);
+  background: rgba(16, 185, 129, 0.28);
+  border: 1px solid rgba(110, 231, 183, 0.58);
+  color: #d1fae5;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  letter-spacing: 0.15px;
+  white-space: nowrap;
+}
+
+.card-ai-badge svg {
+  width: 11px;
+  height: 11px;
+  stroke: #6ee7b7;
+  flex-shrink: 0;
+}
+
+.card-ai-pending-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.24);
+  color: rgba(255, 255, 255, 0.56);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.card-ai-pending-btn:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.2);
+  border-style: solid;
+  border-color: rgba(110, 231, 183, 0.5);
+  color: #d1fae5;
+}
+
+.card-ai-pending-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.card-ai-raw-tag {
   font-size: 10.5px;
   font-weight: 500;
   padding: 2px 7px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  color: rgba(255, 255, 255, 0.88);
-  letter-spacing: 0.2px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+}
+
+/* 已提炼卡片专属光学顶部折光线 + 柔和内折射边界（与未提炼卡片拉开清晰层次） */
+.wide-tool-card.is-ai-distilled,
+.wide-news-card.is-ai-distilled {
+  border-color: rgba(167, 243, 208, 0.36);
+  box-shadow:
+    inset 0 1px 0.5px rgba(209, 250, 229, 0.62),
+    inset 1px 0 0 rgba(167, 243, 208, 0.16),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.14),
+    0 12px 32px -8px rgba(0, 0, 0, 0.38);
+}
+
+.wide-tool-card.is-ai-distilled::before,
+.wide-news-card.is-ai-distilled::before {
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(110, 231, 183, 0.85), rgba(186, 230, 253, 0.75), transparent);
+}
+
+.wide-tool-card.is-ai-distilled .card-body-desc,
+.wide-news-card.is-ai-distilled .news-card-summary {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.wide-tool-card.is-raw-item .card-body-desc,
+.wide-news-card.is-raw-item .news-card-summary {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 /* 中栏：全宽两行中文描述，字体舒适通透 */
@@ -2549,12 +2660,13 @@ body {
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  font-weight: 500;
-  padding: 2.5px 9px;
+  font-weight: 600;
+  padding: 3px 10px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
   white-space: nowrap;
 }
 
@@ -2563,23 +2675,59 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.8);
   flex-shrink: 0;
 }
 
-.news-type-badge.domain-humanities::before { background: #c4b5fd; }
-.news-type-badge.domain-world::before { background: #7dd3fc; }
-.news-type-badge.domain-finance::before { background: #fcd34d; }
-.news-type-badge.domain-science::before { background: #6ee7b7; }
-.news-type-badge.domain-art::before { background: #f9a8d4; }
-.news-type-badge.domain-tech::before { background: #93c5fd; }
+/* 跨界领域染色液态玻璃徽章（高辨识度，零霓虹渐变） */
+.news-type-badge.domain-humanities {
+  background: rgba(147, 51, 234, 0.28);
+  border-color: rgba(196, 181, 253, 0.5);
+  color: #f3e8ff;
+}
+.news-type-badge.domain-humanities::before { background: #c084fc; }
+
+.news-type-badge.domain-world {
+  background: rgba(2, 132, 199, 0.28);
+  border-color: rgba(125, 211, 252, 0.5);
+  color: #e0f2fe;
+}
+.news-type-badge.domain-world::before { background: #38bdf8; }
+
+.news-type-badge.domain-finance {
+  background: rgba(217, 119, 6, 0.28);
+  border-color: rgba(252, 211, 77, 0.5);
+  color: #fef3c7;
+}
+.news-type-badge.domain-finance::before { background: #fbbf24; }
+
+.news-type-badge.domain-science {
+  background: rgba(5, 150, 105, 0.28);
+  border-color: rgba(110, 231, 183, 0.5);
+  color: #d1fae5;
+}
+.news-type-badge.domain-science::before { background: #34d399; }
+
+.news-type-badge.domain-art {
+  background: rgba(219, 39, 119, 0.28);
+  border-color: rgba(249, 168, 212, 0.5);
+  color: #fce7f3;
+}
+.news-type-badge.domain-art::before { background: #f472b6; }
+
+.news-type-badge.domain-tech {
+  background: rgba(37, 99, 235, 0.28);
+  border-color: rgba(147, 197, 253, 0.5);
+  color: #dbeafe;
+}
+.news-type-badge.domain-tech::before { background: #60a5fa; }
 
 .news-origin-pill {
   display: inline-flex;
   align-items: center;
   font-size: 11.5px;
-  font-weight: 400;
-  color: var(--text-tertiary);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
