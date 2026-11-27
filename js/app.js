@@ -2696,7 +2696,7 @@ class AppController {
         await window.shortcutsManager.saveShortcuts();
         window.shortcutsManager.render();
         await window.wallpaperEngine.updateConfig({
-          source: "bing",
+          source: "mixed",
           frequency: "every_newtab",
           blur: 0,
           maskOpacity: 35
