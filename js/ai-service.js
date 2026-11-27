@@ -655,11 +655,12 @@ class AiModelService {
   "headline": "今日风向一句总括（16~26字）",
   "overview": "2~3句全局综合导读，点明今日多领域交汇的核心趋势或看点",
   "sectors": [
-    { "domain": "领域归类（如 人文与社会 / 全球与财经 / 自然与美学 / 科技与工具）", "digest": "20~38字概括该维度今日动态" }
+    { "domain": "领域归类（如 人文与社会 / 全球与财经 / 自然与美学 / 科技与工具）", "digest": "20~38字概括该维度今日动态", "items": [1, 3] }
   ],
-  "topPick": "今日值得精读的 1 篇推荐与理由（30~55字）"
+  "topPick": "今日值得精读的 1 篇推荐与理由（30~55字）",
+  "topPickItem": 1
 }
-要求：sectors 输出 3~4 个板块，禁止使用 Emoji，禁止虚构未提供的内容。`;
+要求：sectors 输出 3~4 个板块，每个板块的 items 为对应条目的 1-based 编号数组（2~4个），topPickItem 为精读推荐对应的编号；禁止使用 Emoji，禁止虚构未提供的内容。`;
 
     const runOverviewBatch = async (subset, titlesOnly = false) => {
       const sourceNames = Array.from(new Set(subset.map(it => it.sourceType || it.sourceName).filter(Boolean)));
@@ -678,9 +679,9 @@ class AiModelService {
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        { temperature: 0.4, maxTokens: 850, timeoutMs: 30000 }
+        { temperature: 0.4, maxTokens: 900, timeoutMs: 30000 }
       );
-      return { content, sourceNames };
+      return { content, sourceNames, subset };
     };
 
     try {
@@ -712,6 +713,25 @@ class AiModelService {
       }
 
       const parsed = this.parseAiJson(result.content);
+      const usedSubset = result.subset || sampled;
+      const mapIndicesToUrls = (indices) => {
+        if (!Array.isArray(indices)) return [];
+        return indices
+          .map(n => usedSubset[Number(n) - 1])
+          .filter(it => it && it.url)
+          .map(it => it.url);
+      };
+      const normalizedSectors = (parsed && Array.isArray(parsed.sectors))
+        ? parsed.sectors.slice(0, 4).map(sec => ({
+            domain: sec.domain || "领域动态",
+            digest: sec.digest || "",
+            urls: mapIndicesToUrls(sec.items)
+          }))
+        : [];
+      const topPickTarget = parsed && Number.isInteger(Number(parsed.topPickItem))
+        ? usedSubset[Number(parsed.topPickItem) - 1]
+        : null;
+
       const overviewObj = {
         date: this.getTodayString(),
         mode,
@@ -722,8 +742,9 @@ class AiModelService {
         riskFiltered,
         headline: (parsed && parsed.headline) ? parsed.headline : `今日${modeLabel}总览`,
         overview: (parsed && parsed.overview) ? parsed.overview : result.content.replace(/```[a-z]*\s*/gi, "").replace(/```/g, "").slice(0, 260).trim(),
-        sectors: (parsed && Array.isArray(parsed.sectors)) ? parsed.sectors.slice(0, 4) : [],
-        topPick: (parsed && parsed.topPick) ? parsed.topPick : ""
+        sectors: normalizedSectors,
+        topPick: (parsed && parsed.topPick) ? parsed.topPick : "",
+        topPickUrl: topPickTarget && topPickTarget.url ? topPickTarget.url : ""
       };
 
       await this.saveOverview(mode, overviewObj);

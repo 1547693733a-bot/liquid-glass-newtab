@@ -232,17 +232,17 @@ class ShortcutsManager {
 
       card.innerHTML = `
         <div class="shortcut-icon-wrapper">
-          <div class="shortcut-actions">
-            <button class="shortcut-action-btn edit-btn" title="编辑" data-action="edit" data-id="${item.id}">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-            </button>
-            <button class="shortcut-action-btn delete-btn" title="删除" data-action="delete" data-id="${item.id}">
-              <svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-          </div>
           <img class="shortcut-icon-img" src="${faviconUrl}" alt="${item.title}" loading="lazy" />
         </div>
         <span class="shortcut-title" title="${item.title}">${item.title}</span>
+        <div class="shortcut-actions">
+          <button class="shortcut-action-btn edit-btn" title="编辑" data-action="edit" data-id="${item.id}">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          </button>
+          <button class="shortcut-action-btn delete-btn" title="删除" data-action="delete" data-id="${item.id}">
+            <svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
       `;
 
       // 图标加载失败时优雅降级为液态渐变文字首字母

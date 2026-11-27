@@ -140,8 +140,31 @@ class AppController {
     this.homeDailyMode = "all"; // "all" | "news" | "tools"
     this.homeSelectedSource = "all";
     this.autoOverviewTriggered = new Set();
+    this.activeOverviewSectorIdx = -1;
+    this.overviewFilterUrls = null;
+    this.overviewFilterLabel = "";
 
-    // 绑定顶部模式切换分段按钮 (🌟 综合动态 / 📰 破茧资讯 / 🛠️ 创新工具)
+    // 绑定左上角品牌与今日发现快速定位锚点
+    const topBrandAnchor = document.getElementById("topBrandAnchor");
+    if (topBrandAnchor) {
+      topBrandAnchor.addEventListener("click", () => {
+        if (this.currentView !== "home") {
+          const tabHome = document.getElementById("tabHome");
+          if (tabHome) tabHome.click();
+        }
+        const ovCard = document.getElementById("aiDailyOverviewCard");
+        if (ovCard && ovCard.classList.contains("collapsed")) {
+          ovCard.classList.remove("collapsed");
+          localStorage.setItem("liquid_ai_overview_collapsed", "0");
+          const tBtn = document.getElementById("toggleAiOverviewBtn");
+          if (tBtn) tBtn.textContent = "收起";
+        }
+        const dailySec = document.getElementById("homeDailySection");
+        if (dailySec) dailySec.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+
+    // 绑定顶部模式切换分段按钮
     const mainTabsContainer = document.getElementById("homeDailyMainTabs");
     if (mainTabsContainer) {
       mainTabsContainer.querySelectorAll(".main-tab-pill").forEach(pill => {
@@ -150,6 +173,9 @@ class AppController {
           pill.classList.add("active");
           this.homeDailyMode = pill.dataset.mode || "all";
           this.homeSelectedSource = "all";
+          this.activeOverviewSectorIdx = -1;
+          this.overviewFilterUrls = null;
+          this.overviewFilterLabel = "";
           this.renderHomeSubchannelPills();
           this.renderHomeWideCards();
           this.renderAiDailyOverview(false);
@@ -221,7 +247,22 @@ class AppController {
     const refreshOvBtn = document.getElementById("refreshAiOverviewBtn");
     if (refreshOvBtn) {
       refreshOvBtn.addEventListener("click", () => {
+        this.activeOverviewSectorIdx = -1;
         this.triggerAiDailyOverview(true);
+      });
+    }
+
+    const copyOvBtn = document.getElementById("copyAiOverviewBtn");
+    if (copyOvBtn) {
+      copyOvBtn.addEventListener("click", async () => {
+        await this.copyAiOverviewMarkdown(copyOvBtn);
+      });
+    }
+
+    const clearFilterBtn = document.getElementById("clearOverviewFilterBtn");
+    if (clearFilterBtn) {
+      clearFilterBtn.addEventListener("click", () => {
+        this.clearOverviewFilter(true);
       });
     }
 
@@ -319,6 +360,9 @@ class AppController {
         pillsContainer.querySelectorAll(".source-pill").forEach(el => el.classList.remove("active"));
         btn.classList.add("active");
         this.homeSelectedSource = p.source;
+        this.overviewFilterUrls = null;
+        this.overviewFilterLabel = "";
+        this.updateOverviewFilterButton();
         this.renderHomeWideCards();
       });
 
@@ -333,6 +377,11 @@ class AppController {
     if (!grid) return;
 
     const allDaily = window.dailyToolsSyncEngine ? window.dailyToolsSyncEngine.dailyTools : [];
+    const brandEdition = document.getElementById("topBrandEditionText");
+    if (brandEdition) {
+      brandEdition.textContent = allDaily.length ? `今日 ${allDaily.length} 条` : "今日发现";
+    }
+
     let list = allDaily;
 
     const mode = this.homeDailyMode || "all";
@@ -342,20 +391,27 @@ class AppController {
       list = list.filter(t => !t.isNews && t.itemType !== "news");
     }
 
-    if (this.homeSelectedSource === "news_all") {
+    if (this.overviewFilterUrls && this.overviewFilterUrls.size > 0) {
+      list = list.filter(t => this.overviewFilterUrls.has(t.url));
+    } else if (this.homeSelectedSource === "news_all") {
       list = list.filter(t => t.isNews || t.itemType === "news");
     } else if (this.homeSelectedSource && this.homeSelectedSource !== "all") {
       list = list.filter(t => t.sourceType === this.homeSelectedSource || t.sourceId === this.homeSelectedSource);
     }
 
     // 综合动态与多源推荐机制：未锁定单一特定来源时，自动调用多源轮转穿插引擎，确保前排包罗万象
-    if ((!this.homeSelectedSource || this.homeSelectedSource === "all" || this.homeSelectedSource === "news_all") &&
+    if ((!this.overviewFilterUrls || this.overviewFilterUrls.size === 0) &&
+        (!this.homeSelectedSource || this.homeSelectedSource === "all" || this.homeSelectedSource === "news_all") &&
         window.dailyToolsSyncEngine && window.dailyToolsSyncEngine.interleaveAndDiversifyDaily) {
       list = window.dailyToolsSyncEngine.interleaveAndDiversifyDaily(list, mode);
     }
 
+    this.updateOverviewFilterButton();
+
     if (countBadge) {
-      if (mode === "news") {
+      if (this.overviewFilterUrls && this.overviewFilterUrls.size > 0 && this.overviewFilterLabel) {
+        countBadge.textContent = `${this.overviewFilterLabel} · ${list.length} 条`;
+      } else if (mode === "news") {
         countBadge.textContent = `${list.length} 篇破茧资讯`;
       } else if (mode === "tools") {
         countBadge.textContent = `${list.length} 款创新工具`;
@@ -437,6 +493,7 @@ class AppController {
 
     list.forEach(tool => {
       const card = document.createElement("div");
+      card.dataset.itemUrl = tool.url || "";
       const domain = window.shortcutsManager.extractDomain(tool.url);
       const isAlreadyAdded = window.shortcutsManager.hasShortcut(tool.url);
       const isSaved = window.archiveManager ? window.archiveManager.isSaved(tool.url) : false;
@@ -929,6 +986,7 @@ class AppController {
 
     list.forEach(tool => {
       const card = document.createElement("div");
+      card.dataset.itemUrl = tool.url || "";
       card.className = "tool-card";
 
       const domain = window.shortcutsManager.extractDomain(tool.url);
@@ -1366,11 +1424,265 @@ class AppController {
     if (section) section.scrollIntoView({ behavior: "smooth" });
   }
 
-  // 渲染「AI 跨界今日总览」简报卡片
+  // 根据总览板块名称推断领域色点风格
+  inferOverviewSectorColor(domainText = "") {
+    const s = String(domainText || "");
+    if (/(人文|社会|哲学|心理|文化|历史|生活|教育)/.test(s)) return "humanities";
+    if (/(全球|世界|国际|时政|社会观察|地缘)/.test(s)) return "world";
+    if (/(财经|经济|商业|金融|市场|资本|产业)/.test(s)) return "finance";
+    if (/(自然|科学|生命|医学|生物|健康|宇宙|天文|化石)/.test(s)) return "science";
+    if (/(美学|艺术|设计|摄影|建筑|创意|视觉)/.test(s)) return "art";
+    if (/(工具|开源|效率|产品|项目|应用)/.test(s)) return "tools";
+    return "tech";
+  }
+
+  // 智能提取文本检索词（兼容书名号、中文双字词与英文词）
+  extractOverviewTokens(text = "") {
+    const str = String(text || "");
+    const quoted = [];
+    const qMatches = str.match(/[《「“"]([^》」”"]{2,28})[》」”"]/g) || [];
+    qMatches.forEach(m => {
+      const clean = m.slice(1, -1).trim();
+      if (clean.length >= 2) quoted.push(clean);
+    });
+    const latin = (str.toLowerCase().match(/[a-z0-9][a-z0-9._-]{2,}/g) || []);
+    const cjkSegments = str.match(/[\u4e00-\u9fa5]{2,}/g) || [];
+    const bigrams = [];
+    cjkSegments.forEach(seg => {
+      for (let i = 0; i < seg.length - 1 && bigrams.length < 36; i += 1) {
+        const bg = seg.slice(i, i + 2);
+        if (!/^(今日|推荐|阅读|关注|探讨|展现|带来|持续|成为|通过|关于|领域|视角|深度|最新|方面|相关)$/.test(bg)) {
+          bigrams.push(bg);
+        }
+      }
+    });
+    return { quoted, latin: Array.from(new Set(latin)), bigrams: Array.from(new Set(bigrams)) };
+  }
+
+  // 为总览中的单个领域分栏匹配最关联的原始条目（同时兼容新生成 URLs 与历史缓存总览）
+  resolveSectorMatchedItems(sector, allItems = []) {
+    if (!sector || !allItems.length) return [];
+    const byUrl = new Map(allItems.map(it => [it.url, it]));
+    const picked = [];
+    const seen = new Set();
+
+    if (Array.isArray(sector.urls) && sector.urls.length) {
+      sector.urls.forEach(u => {
+        const found = byUrl.get(u);
+        if (found && !seen.has(found.url)) {
+          seen.add(found.url);
+          picked.push(found);
+        }
+      });
+    }
+
+    const domainText = String(sector.domain || "");
+    const digestText = String(sector.digest || "");
+    const tokens = this.extractOverviewTokens(`${domainText} ${digestText}`);
+
+    const wantsHumanities = /(人文|社会|哲学|心理|文化|历史|生活)/.test(domainText);
+    const wantsWorld = /(全球|世界|国际)/.test(domainText);
+    const wantsFinance = /(财经|经济|商业|金融|市场)/.test(domainText);
+    const wantsScience = /(自然|科学|生命|生物|医学|宇宙)/.test(domainText);
+    const wantsArt = /(美学|艺术|设计|摄影|建筑)/.test(domainText);
+    const wantsTechTools = /(科技|工具|开源|AI|人工智能|开发|工程|产品|创新)/i.test(domainText);
+
+    const scored = allItems
+      .filter(it => it && !seen.has(it.url))
+      .map(it => {
+        const hay = `${it.name || ""} ${it.titleZh || ""} ${it.descZh || it.desc || ""} ${it.sourceName || ""} ${it.sourceType || ""} ${it.badge || ""}`;
+        const hayLow = hay.toLowerCase();
+        let score = 0;
+
+        tokens.quoted.forEach(q => {
+          if (hayLow.includes(q.toLowerCase())) score += 24;
+        });
+        tokens.latin.forEach(w => {
+          if (hayLow.includes(w)) score += 6;
+        });
+        tokens.bigrams.forEach(bg => {
+          if (hay.includes(bg)) score += 3;
+        });
+
+        const src = it.sourceType || "";
+        const style = it.domainStyle || "";
+        const isTool = !it.isNews && it.itemType !== "news";
+        if (wantsHumanities && (style === "humanities" || src === "知乎日报" || src === "Aeon 人文")) score += 8;
+        if (wantsWorld && (style === "world" || src === "BBC 中文")) score += 8;
+        if (wantsFinance && (style === "finance" || src === "FT中文网")) score += 8;
+        if (wantsScience && (style === "science" || src === "自然科学")) score += 8;
+        if (wantsArt && (style === "art" || src === "艺术美学")) score += 8;
+        if (wantsTechTools && (isTool || style === "tech" || ["GitHub", "Product Hunt", "V2EX", "Hacker News", "AIHot", "Solidot", "少数派", "极客公园", "阮一峰周刊"].includes(src))) score += 6;
+
+        return { item: it, score };
+      })
+      .filter(x => x.score >= 6)
+      .sort((a, b) => b.score - a.score);
+
+    for (const s of scored) {
+      if (picked.length >= 5) break;
+      seen.add(s.item.url);
+      picked.push(s.item);
+    }
+    return picked;
+  }
+
+  // 为「精读推荐」匹配具体条目，支持直达详情与原文
+  resolveTopPickItem(cached, allItems = []) {
+    if (!cached || !allItems.length) return null;
+    if (cached.topPickUrl) {
+      const exact = allItems.find(it => it.url === cached.topPickUrl);
+      if (exact) return exact;
+    }
+    const text = String(cached.topPick || "");
+    if (!text) return null;
+
+    const tokens = this.extractOverviewTokens(text);
+    const knownSources = ["阮一峰", "知乎日报", "Aeon", "BBC", "FT中文网", "ScienceDaily", "Colossal", "Solidot", "少数派", "极客公园", "GitHub", "Product Hunt", "Hacker News", "V2EX", "AIHot"];
+    const mentionedSources = knownSources.filter(s => text.toLowerCase().includes(s.toLowerCase()));
+
+    let best = null;
+    let bestScore = 0;
+
+    allItems.forEach(it => {
+      const title = String(it.name || "");
+      const hay = `${title} ${it.titleZh || ""} ${it.descZh || it.desc || ""} ${it.sourceName || ""} ${it.sourceType || ""}`;
+      const hayLow = hay.toLowerCase();
+      let score = 0;
+
+      tokens.quoted.forEach(q => {
+        if (title.toLowerCase().includes(q.toLowerCase())) score += 45;
+        else if (hayLow.includes(q.toLowerCase())) score += 28;
+      });
+      mentionedSources.forEach(src => {
+        if ((it.sourceType || "").toLowerCase().includes(src.toLowerCase()) || (it.sourceName || "").toLowerCase().includes(src.toLowerCase())) {
+          score += 18;
+        }
+      });
+      tokens.latin.forEach(w => {
+        if (hayLow.includes(w)) score += 6;
+      });
+      tokens.bigrams.forEach(bg => {
+        if (title.includes(bg)) score += 5;
+        else if (hay.includes(bg)) score += 2;
+      });
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = it;
+      }
+    });
+
+    return bestScore >= 10 ? best : null;
+  }
+
+  // 更新「清除领域筛选」按钮显示状态
+  updateOverviewFilterButton() {
+    const clearBtn = document.getElementById("clearOverviewFilterBtn");
+    if (!clearBtn) return;
+    if (this.overviewFilterUrls && this.overviewFilterUrls.size > 0 && this.overviewFilterLabel) {
+      clearBtn.style.display = "inline-flex";
+      clearBtn.textContent = `筛选：${this.overviewFilterLabel} ✕`;
+    } else {
+      clearBtn.style.display = "none";
+    }
+  }
+
+  // 清除由总览板块触发的下方列表筛选
+  clearOverviewFilter(rerender = true) {
+    this.overviewFilterUrls = null;
+    this.overviewFilterLabel = "";
+    this.updateOverviewFilterButton();
+    if (rerender) {
+      this.renderHomeWideCards();
+      this.renderAiDailyOverview(false);
+    }
+  }
+
+  // 平滑定位并光学高亮下方信息流中的指定卡片
+  jumpToFeedItem(tool) {
+    if (!tool || !tool.url) return;
+    const grid = document.getElementById("homeWideGrid");
+    if (!grid) return;
+
+    const findCard = () => Array.from(grid.children).find(el => el.dataset && el.dataset.itemUrl === tool.url);
+    let targetCard = findCard();
+
+    if (!targetCard) {
+      this.overviewFilterUrls = null;
+      this.overviewFilterLabel = "";
+      this.homeSelectedSource = "all";
+      this.homeDailyMode = "all";
+      const mainTabs = document.getElementById("homeDailyMainTabs");
+      if (mainTabs) {
+        mainTabs.querySelectorAll(".main-tab-pill").forEach(p => p.classList.toggle("active", p.dataset.mode === "all"));
+      }
+      this.renderHomeSubchannelPills();
+      this.renderHomeWideCards();
+      targetCard = findCard();
+    }
+
+    if (targetCard) {
+      targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      targetCard.classList.remove("card-jump-highlight");
+      void targetCard.offsetWidth;
+      targetCard.classList.add("card-jump-highlight");
+      setTimeout(() => targetCard.classList.remove("card-jump-highlight"), 1700);
+    } else {
+      this.openToolDetailModal(tool);
+    }
+  }
+
+  // 复制今日总览为结构化 Markdown
+  async copyAiOverviewMarkdown(btnEl) {
+    const mode = this.homeDailyMode || "all";
+    const cached = window.aiService ? window.aiService.getCachedOverview(mode) : null;
+    if (!cached) {
+      this.showToast("当前暂无可复制的总览简报");
+      return;
+    }
+    const items = window.dailyToolsSyncEngine
+      ? window.dailyToolsSyncEngine.getToolsByModeAndSource(mode, "all")
+      : [];
+    const topPickItem = this.resolveTopPickItem(cached, items);
+
+    const lines = [
+      `# ${cached.headline || "今日总览"}`,
+      `> ${cached.date || ""} · ${cached.model || "AI"} · 覆盖 ${cached.sourceCount || "多"} 源`,
+      "",
+      cached.overview || ""
+    ];
+    if (Array.isArray(cached.sectors) && cached.sectors.length) {
+      lines.push("");
+      cached.sectors.forEach(sec => {
+        lines.push(`- **${sec.domain || "领域动态"}**：${sec.digest || ""}`);
+      });
+    }
+    if (cached.topPick) {
+      lines.push("");
+      const linkSuffix = topPickItem && topPickItem.url ? ` (${topPickItem.url})` : "";
+      lines.push(`**精读推荐**：${cached.topPick}${linkSuffix}`);
+    }
+
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      if (btnEl) {
+        const prev = btnEl.textContent;
+        btnEl.textContent = "已复制";
+        setTimeout(() => { btnEl.textContent = prev; }, 1600);
+      }
+      this.showToast("已复制今日总览简报（Markdown）");
+    } catch (e) {
+      this.showToast("复制失败，请检查剪贴板权限");
+    }
+  }
+
+  // 渲染「AI 跨界今日总览」交互式简报卡片
   renderAiDailyOverview(allowAuto = false) {
     const body = document.getElementById("aiDailyOverviewBody");
     const meta = document.getElementById("aiOverviewMeta");
     const btnText = document.getElementById("refreshAiOverviewText");
+    const copyBtn = document.getElementById("copyAiOverviewBtn");
     if (!body) return;
 
     const mode = this.homeDailyMode || "all";
@@ -1379,9 +1691,12 @@ class AppController {
       : [];
     const aiReady = !!(window.aiService && window.aiService.isEnabled());
 
+    this.updateOverviewFilterButton();
+
     if (!aiReady) {
       if (meta) meta.textContent = "未配置 AI 模型";
       if (btnText) btnText.textContent = "配置 AI";
+      if (copyBtn) copyBtn.style.display = "none";
       const empty = document.createElement("div");
       empty.className = "ai-overview-empty";
       const span = document.createElement("span");
@@ -1398,6 +1713,7 @@ class AppController {
         meta.textContent = `${cached.date} · ${cached.model} · ${cached.sourceCount || "多"} 源${riskNote}`;
       }
       if (btnText) btnText.textContent = "重新概括";
+      if (copyBtn) copyBtn.style.display = "inline-flex";
 
       const nodes = [];
 
@@ -1416,38 +1732,233 @@ class AppController {
       }
 
       if (Array.isArray(cached.sectors) && cached.sectors.length > 0) {
+        const sectorMatches = cached.sectors.map(sec => this.resolveSectorMatchedItems(sec, items));
         const grid = document.createElement("div");
         grid.className = "ai-overview-sectors";
-        cached.sectors.forEach(sec => {
-          const card = document.createElement("div");
-          card.className = "ai-sector-item";
 
-          const dom = document.createElement("div");
+        cached.sectors.forEach((sec, idx) => {
+          const matched = sectorMatches[idx] || [];
+          const colorCls = this.inferOverviewSectorColor(sec.domain);
+          const isExpanded = this.activeOverviewSectorIdx === idx;
+          const isFiltered = this.overviewFilterLabel === sec.domain && this.overviewFilterUrls && this.overviewFilterUrls.size > 0;
+
+          const card = document.createElement("button");
+          card.type = "button";
+          card.className = `ai-sector-item ${isExpanded ? "active" : ""} ${isFiltered ? "filtered" : ""}`.trim();
+          card.title = matched.length ? `点击展开 ${matched.length} 篇关联条目` : "点击筛选相关动态";
+
+          const head = document.createElement("div");
+          head.className = "ai-sector-head";
+
+          const dom = document.createElement("span");
           dom.className = "ai-sector-domain";
-          dom.textContent = sec.domain || "领域动态";
+          dom.innerHTML = `<span class="ai-sector-dot dot-${colorCls}" aria-hidden="true"></span><span>${sec.domain || "领域动态"}</span>`;
+
+          const rightMeta = document.createElement("span");
+          rightMeta.className = "ai-sector-meta";
+          rightMeta.innerHTML = `${matched.length ? `<span class="ai-sector-count">${matched.length} 篇</span>` : ""}<span class="ai-sector-chevron" aria-hidden="true">${isExpanded ? "⌄" : "›"}</span>`;
+
+          head.appendChild(dom);
+          head.appendChild(rightMeta);
 
           const dig = document.createElement("div");
           dig.className = "ai-sector-digest";
           dig.textContent = sec.digest || "";
 
-          card.appendChild(dom);
+          card.appendChild(head);
           card.appendChild(dig);
+
+          card.addEventListener("click", () => {
+            this.activeOverviewSectorIdx = (this.activeOverviewSectorIdx === idx) ? -1 : idx;
+            this.renderAiDailyOverview(false);
+          });
+
           grid.appendChild(card);
         });
         nodes.push(grid);
+
+        // 交互式关联条目抽屉（点击任意领域分栏即平滑展开）
+        if (this.activeOverviewSectorIdx >= 0 && cached.sectors[this.activeOverviewSectorIdx]) {
+          const activeSec = cached.sectors[this.activeOverviewSectorIdx];
+          const matchedList = sectorMatches[this.activeOverviewSectorIdx] || [];
+          const activeColor = this.inferOverviewSectorColor(activeSec.domain);
+          const isGridFiltered = this.overviewFilterLabel === activeSec.domain && this.overviewFilterUrls && this.overviewFilterUrls.size > 0;
+
+          const drawer = document.createElement("div");
+          drawer.className = "ai-sector-drawer";
+
+          const drawerHead = document.createElement("div");
+          drawerHead.className = "ai-drawer-header";
+
+          const drawerTitle = document.createElement("div");
+          drawerTitle.className = "ai-drawer-title";
+          drawerTitle.innerHTML = `<span class="ai-sector-dot dot-${activeColor}" aria-hidden="true"></span><span>${activeSec.domain}</span><span class="ai-drawer-count">${matchedList.length} 篇关联</span>`;
+
+          const drawerActions = document.createElement("div");
+          drawerActions.className = "ai-drawer-actions";
+
+          if (matchedList.length > 0) {
+            const filterGridBtn = document.createElement("button");
+            filterGridBtn.type = "button";
+            filterGridBtn.className = `ai-drawer-btn ${isGridFiltered ? "active" : ""}`;
+            filterGridBtn.textContent = isGridFiltered ? "已筛选下方列表 ✕" : "在下方列表仅看此领域";
+            filterGridBtn.addEventListener("click", () => {
+              if (isGridFiltered) {
+                this.clearOverviewFilter(true);
+              } else {
+                this.overviewFilterUrls = new Set(matchedList.map(it => it.url));
+                this.overviewFilterLabel = activeSec.domain || "精选领域";
+                this.renderHomeWideCards();
+                this.renderAiDailyOverview(false);
+                const gridEl = document.getElementById("homeWideGrid");
+                if (gridEl) gridEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              }
+            });
+            drawerActions.appendChild(filterGridBtn);
+          }
+
+          const closeDrawerBtn = document.createElement("button");
+          closeDrawerBtn.type = "button";
+          closeDrawerBtn.className = "ai-drawer-btn";
+          closeDrawerBtn.textContent = "收起";
+          closeDrawerBtn.addEventListener("click", () => {
+            this.activeOverviewSectorIdx = -1;
+            this.renderAiDailyOverview(false);
+          });
+          drawerActions.appendChild(closeDrawerBtn);
+
+          drawerHead.appendChild(drawerTitle);
+          drawerHead.appendChild(drawerActions);
+          drawer.appendChild(drawerHead);
+
+          if (matchedList.length === 0) {
+            const noMatch = document.createElement("div");
+            noMatch.className = "ai-drawer-empty";
+            noMatch.textContent = "当前列表未找到直接匹配条目，可点击右上角「重新概括」更新索引。";
+            drawer.appendChild(noMatch);
+          } else {
+            const listWrap = document.createElement("div");
+            listWrap.className = "ai-drawer-list";
+
+            matchedList.forEach(item => {
+              const row = document.createElement("div");
+              row.className = "ai-drawer-row";
+              const isSaved = window.archiveManager ? window.archiveManager.isSaved(item.url) : false;
+              const srcLabel = item.sourceName || item.sourceType || "资讯";
+
+              const left = document.createElement("div");
+              left.className = "ai-drawer-row-main";
+              left.innerHTML = `<span class="ai-drawer-source">${srcLabel}</span><span class="ai-drawer-item-title">${item.name}</span>`;
+              left.addEventListener("click", () => this.openToolDetailModal(item));
+
+              const right = document.createElement("div");
+              right.className = "ai-drawer-row-actions";
+
+              const locateBtn = document.createElement("button");
+              locateBtn.type = "button";
+              locateBtn.className = "ai-drawer-link";
+              locateBtn.textContent = "定位";
+              locateBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.jumpToFeedItem(item);
+              });
+
+              const saveBtn = document.createElement("button");
+              saveBtn.type = "button";
+              saveBtn.className = `ai-drawer-link ${isSaved ? "saved" : ""}`;
+              saveBtn.textContent = isSaved ? "已存" : "暂存";
+              saveBtn.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                if (!window.archiveManager) return;
+                const savedNow = await window.archiveManager.toggleSave(item);
+                saveBtn.classList.toggle("saved", savedNow);
+                saveBtn.textContent = savedNow ? "已存" : "暂存";
+                this.renderHomeWideCards();
+                this.showToast(savedNow ? `已暂存「${item.name.slice(0, 16)}」` : "已移除暂存");
+              });
+
+              const visitLink = document.createElement("a");
+              visitLink.className = "ai-drawer-link primary";
+              visitLink.href = item.url;
+              visitLink.target = "_blank";
+              visitLink.rel = "noopener noreferrer";
+              visitLink.textContent = "阅读 ↗";
+
+              right.appendChild(locateBtn);
+              right.appendChild(saveBtn);
+              right.appendChild(visitLink);
+
+              row.appendChild(left);
+              row.appendChild(right);
+              listWrap.appendChild(row);
+            });
+            drawer.appendChild(listWrap);
+          }
+
+          nodes.push(drawer);
+        }
       }
 
       if (cached.topPick) {
+        const topPickItem = this.resolveTopPickItem(cached, items);
         const pick = document.createElement("div");
-        pick.className = "ai-overview-toppick";
+        pick.className = `ai-overview-toppick ${topPickItem ? "is-interactive" : ""}`.trim();
+
+        const pickLeft = document.createElement("div");
+        pickLeft.className = "ai-toppick-main";
+
         const label = document.createElement("span");
         label.className = "ai-toppick-label";
         label.textContent = "精读推荐";
         const text = document.createElement("span");
         text.className = "ai-toppick-text";
         text.textContent = cached.topPick;
-        pick.appendChild(label);
-        pick.appendChild(text);
+
+        pickLeft.appendChild(label);
+        pickLeft.appendChild(text);
+        pick.appendChild(pickLeft);
+
+        if (topPickItem) {
+          pick.title = `点击查看《${topPickItem.name}》摘要详情`;
+          pick.addEventListener("click", (e) => {
+            if (e.target.closest(".ai-toppick-action")) return;
+            this.openToolDetailModal(topPickItem);
+          });
+
+          const actions = document.createElement("div");
+          actions.className = "ai-toppick-actions";
+
+          const detailBtn = document.createElement("button");
+          detailBtn.type = "button";
+          detailBtn.className = "ai-toppick-action";
+          detailBtn.textContent = "查看摘要";
+          detailBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.openToolDetailModal(topPickItem);
+          });
+
+          const locateBtn = document.createElement("button");
+          locateBtn.type = "button";
+          locateBtn.className = "ai-toppick-action";
+          locateBtn.textContent = "定位";
+          locateBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.jumpToFeedItem(topPickItem);
+          });
+
+          const readLink = document.createElement("a");
+          readLink.className = "ai-toppick-action primary";
+          readLink.href = topPickItem.url;
+          readLink.target = "_blank";
+          readLink.rel = "noopener noreferrer";
+          readLink.textContent = "阅读 ↗";
+
+          actions.appendChild(detailBtn);
+          actions.appendChild(locateBtn);
+          actions.appendChild(readLink);
+          pick.appendChild(actions);
+        }
+
         nodes.push(pick);
       }
 
@@ -1457,6 +1968,7 @@ class AppController {
 
     if (meta) meta.textContent = `${window.aiService.getModelName()}`;
     if (btnText) btnText.textContent = "生成总览";
+    if (copyBtn) copyBtn.style.display = "none";
 
     const empty = document.createElement("div");
     empty.className = "ai-overview-empty";

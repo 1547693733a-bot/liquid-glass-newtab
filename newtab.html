@@ -22,10 +22,23 @@
   <!-- 主应用容器 -->
   <div class="app-wrapper">
 
-    <!-- 顶部导航栏 -->
+    <!-- 顶部导航栏 (三列视觉对称布局) -->
     <header class="top-nav">
-      <!-- 左侧平衡占位区 (去除了原来的品牌胶囊) -->
-      <div class="top-left-spacer"></div>
+      <!-- 左侧：光学品牌与今日简报快速锚点 -->
+      <button type="button" class="top-brand-pill" id="topBrandAnchor" title="跳转到全网发现与今日总览">
+        <span class="top-brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 2.75C12 2.75 5.25 9.65 5.25 14.35C5.25 18.08 8.27 21.1 12 21.1C15.73 21.1 18.75 18.08 18.75 14.35C18.75 9.65 12 2.75 12 2.75Z" stroke="currentColor" stroke-width="1.75"/>
+            <path d="M9.1 14.6C9.1 16.35 10.45 17.75 12.2 17.75" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.72"/>
+          </svg>
+        </span>
+        <span class="top-brand-name">Liquid Tab</span>
+        <span class="top-brand-sep" aria-hidden="true"></span>
+        <span class="top-brand-live">
+          <span class="top-brand-dot" aria-hidden="true"></span>
+          <span id="topBrandEditionText">今日发现</span>
+        </span>
+      </button>
 
       <!-- 核心视图切换分段控制器 (独立展示我的主页与精选工具) -->
       <nav class="view-tabs">
@@ -230,6 +243,8 @@
                 <span class="ai-overview-meta" id="aiOverviewMeta"></span>
               </div>
               <div class="ai-overview-actions">
+                <button class="ai-ov-btn ai-ov-filter-clear" id="clearOverviewFilterBtn" style="display: none;" title="清除领域筛选">清除筛选</button>
+                <button class="ai-ov-btn" id="copyAiOverviewBtn" title="复制今日总览为 Markdown">复制</button>
                 <button class="ai-ov-btn" id="refreshAiOverviewBtn" title="重新生成总览">
                   <span id="refreshAiOverviewText">生成总览</span>
                 </button>
