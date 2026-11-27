@@ -227,12 +227,16 @@ class ShortcutsManager {
       card.setAttribute("rel", "noopener noreferrer");
       card.dataset.id = item.id;
 
-      const faviconUrl = this.getFaviconUrl(item.url, item.customIcon);
-      const firstLetter = (item.title || "W").trim().charAt(0).toUpperCase();
+      const resolved = window.siteIconAdapter
+        ? window.siteIconAdapter.resolve(item.url, item.title, item.customIcon)
+        : { src: this.getFaviconUrl(item.url, item.customIcon), mode: "favicon" };
+      const domain = this.extractDomain(item.url);
+      const isAdaptiveFavicon = resolved.mode === "favicon";
+      const wrapperCls = isAdaptiveFavicon ? "shortcut-icon-wrapper is-favicon-adaptive" : "shortcut-icon-wrapper is-brand-icon";
 
       card.innerHTML = `
-        <div class="shortcut-icon-wrapper">
-          <img class="shortcut-icon-img" src="${faviconUrl}" alt="${item.title}" loading="lazy" />
+        <div class="${wrapperCls}">
+          <img class="shortcut-icon-img" src="${resolved.src}" alt="${item.title}" loading="lazy" />
         </div>
         <span class="shortcut-title" title="${item.title}">${item.title}</span>
         <div class="shortcut-actions">
@@ -245,14 +249,40 @@ class ShortcutsManager {
         </div>
       `;
 
-      // 图标加载失败时优雅降级为液态渐变文字首字母
+      const wrapper = card.querySelector(".shortcut-icon-wrapper");
       const img = card.querySelector(".shortcut-icon-img");
+
+      const upgradeToMonogram = () => {
+        if (!wrapper) return;
+        wrapper.classList.remove("is-favicon-adaptive");
+        wrapper.classList.add("is-brand-icon");
+        if (window.siteIconAdapter) {
+          img.src = window.siteIconAdapter.buildMonogramSvg(item.title, domain);
+          img.classList.remove("is-compact-icon");
+        } else {
+          img.remove();
+          const avatar = document.createElement("div");
+          avatar.className = "shortcut-text-avatar";
+          avatar.textContent = (item.title || "W").trim().charAt(0).toUpperCase();
+          wrapper.appendChild(avatar);
+        }
+      };
+
+      if (isAdaptiveFavicon) {
+        img.onload = () => {
+          // 16x16 通常是 Google 默认灰色小地球或极低清老图标，直接升级为精排渐变首字原生图标
+          if (img.naturalWidth <= 16 && img.naturalHeight <= 16) {
+            img.onload = null;
+            upgradeToMonogram();
+          } else if (img.naturalWidth < 64) {
+            img.classList.add("is-compact-icon");
+          }
+        };
+      }
+
       img.onerror = () => {
-        img.remove();
-        const avatar = document.createElement("div");
-        avatar.className = "shortcut-text-avatar";
-        avatar.textContent = firstLetter;
-        card.querySelector(".shortcut-icon-wrapper").appendChild(avatar);
+        img.onerror = null;
+        upgradeToMonogram();
       };
 
       this.container.appendChild(card);
