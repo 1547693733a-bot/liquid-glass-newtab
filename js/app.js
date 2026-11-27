@@ -74,6 +74,7 @@ class AppController {
   }
 
   async init() {
+    this.initHeroClock();
     if (window.archiveManager) {
       await window.archiveManager.init();
     }
@@ -110,6 +111,28 @@ class AppController {
       const input = document.getElementById("searchInput");
       if (input) input.focus();
     }, 200);
+  }
+
+  // 极简实时时钟与日期题头
+  initHeroClock() {
+    const timeEl = document.getElementById("heroClockTime");
+    const dateEl = document.getElementById("heroClockDate");
+    if (!timeEl) return;
+
+    const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+    const updateClock = () => {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      timeEl.textContent = `${hh}:${mm}`;
+      if (dateEl) {
+        dateEl.textContent = `${now.getMonth() + 1}月${now.getDate()}日 · ${weekdays[now.getDay()]}`;
+      }
+    };
+
+    updateClock();
+    if (this.heroClockTimer) clearInterval(this.heroClockTimer);
+    this.heroClockTimer = setInterval(updateClock, 15000);
   }
 
   // 初始化首页今日新发现宽卡片、多维破茧模式切换与主题筛选器
@@ -420,37 +443,39 @@ class AppController {
       const isNewsItem = tool.isNews || tool.itemType === "news" || tool.sourceType === "AIHot";
       const aiStateClass = tool.aiGenerated ? "is-ai-distilled" : "is-raw-item";
 
-      // ================= 资讯源排版模式 (染色液态玻璃分类 + 已提炼/未提炼清晰区分) =================
+      // ================= 资讯源排版模式 (瑞士编辑排版 + 宝石色眉标 + 左侧翡翠折射条区分已提炼) =================
       if (isNewsItem) {
         card.className = `wide-news-card ${aiStateClass}`;
         const mediaSource = tool.sourceName || tool.titleZh || tool.sourceType || "资讯";
         const domainCls = `domain-${inferDomainStyle(tool)}`;
-        const tagsHtml = (tool.highlights || [])
+        const cleanTags = (tool.highlights || [])
           .slice(0, 2)
           .map(h => stripLeadingEmoji(h))
+          .filter(Boolean);
+        const footerMetaItems = [domain, ...cleanTags]
           .filter(Boolean)
-          .map(h => `<span class="news-tag-chip">${h}</span>`)
-          .join("");
+          .map(t => `<span class="editorial-meta-item">${t}</span>`)
+          .join('<span class="editorial-meta-dot" aria-hidden="true">·</span>');
 
         card.innerHTML = `
           <div class="news-card-top">
             <div class="news-card-meta-left">
               <span class="news-type-badge ${domainCls}">${tool.badge || "资讯"}</span>
+              <span class="news-meta-sep" aria-hidden="true">·</span>
               <span class="news-origin-pill">${mediaSource}</span>
             </div>
             <div class="news-card-meta-right">
               ${buildAiStatusHtml(tool)}
-              <span>${tool.pubDate || "今日"}</span>
+              <span class="news-date-stamp">${tool.pubDate || "今日"}</span>
             </div>
           </div>
           <h3 class="news-card-headline">${tool.name}</h3>
-          <div class="news-card-summary" title="${tool.descZh || tool.desc}">
+          <p class="news-card-summary" title="${tool.descZh || tool.desc}">
             ${tool.descZh || tool.desc}
-          </div>
+          </p>
           <div class="news-card-footer">
             <div class="news-card-tags">
-              <span class="news-tag-chip">${domain}</span>
-              ${tagsHtml}
+              ${footerMetaItems}
             </div>
             <div class="news-card-actions">
               <button class="news-btn-save ${isSaved ? "saved" : ""}" title="${isSaved ? "取消稍后阅读" : "加入稍后阅读"}">
@@ -495,7 +520,7 @@ class AppController {
         return;
       }
 
-      // ================= 工具/项目源排版模式 (Product Hunt, GitHub, HN, V2EX) =================
+      // ================= 工具/项目源排版模式 (与资讯卡完全对齐的 4 层瑞士编辑基线) =================
       card.className = `wide-tool-card ${aiStateClass}`;
       const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
@@ -504,41 +529,49 @@ class AppController {
       else if (tool.sourceType === "Hacker News") sourceTagClass = "hn";
       else if (tool.sourceType === "V2EX") sourceTagClass = "v2";
 
-      const highlightsHtml = (tool.highlights || [])
+      const cleanHighlights = (tool.highlights || [])
         .slice(0, 2)
         .map(h => stripLeadingEmoji(h))
+        .filter(Boolean);
+      const toolFooterList = cleanHighlights.length ? cleanHighlights : [domain];
+      const toolFooterMeta = toolFooterList
         .filter(Boolean)
-        .map(h => `<span class="card-chip-highlight">${h}</span>`)
-        .join("");
+        .map(h => `<span class="editorial-meta-item">${h}</span>`)
+        .join('<span class="editorial-meta-dot" aria-hidden="true">·</span>');
+      const showTitleSub = tool.titleZh && String(tool.name || "").length <= 20;
 
       card.innerHTML = `
-        <div class="card-head-row">
-          <div class="card-head-left">
-            <div class="card-icon-squircle">
-              <img src="${faviconUrl}" alt="${tool.name}" onerror="this.onerror=null;this.src='${fallbackIcon}'" />
-            </div>
-            <div class="card-title-group">
-              <div class="card-title-main">
-                <span class="card-title-name">${tool.name}</span>
-                ${tool.titleZh ? `<span class="card-title-sub">${tool.titleZh}</span>` : ""}
-              </div>
-            </div>
+        <div class="card-eyebrow-row">
+          <div class="card-eyebrow-left">
+            <span class="source-tag ${sourceTagClass}">${tool.sourceType || "工具"}</span>
+            <span class="news-meta-sep" aria-hidden="true">·</span>
+            <span class="card-eyebrow-domain">${domain}</span>
           </div>
           <div class="card-head-right">
-            <span class="source-tag ${sourceTagClass}">${tool.sourceType || "工具"}</span>
             ${buildAiStatusHtml(tool)}
+            <span class="card-chip-date">${tool.pubDate || "今日"}</span>
           </div>
         </div>
 
-        <div class="card-body-desc" title="${tool.descZh || tool.desc}">
-          ${tool.descZh || tool.desc}
+        <div class="card-head-row">
+          <div class="card-icon-squircle">
+            <img src="${faviconUrl}" alt="${tool.name}" onerror="this.onerror=null;this.src='${fallbackIcon}'" />
+          </div>
+          <div class="card-title-group">
+            <div class="card-title-main">
+              <span class="card-title-name">${tool.name}</span>
+              ${showTitleSub ? `<span class="card-title-sub">${tool.titleZh}</span>` : ""}
+            </div>
+          </div>
         </div>
+
+        <p class="card-body-desc" title="${tool.descZh || tool.desc}">
+          ${tool.descZh || tool.desc}
+        </p>
 
         <div class="card-foot-row">
           <div class="card-foot-meta">
-            <span class="card-chip-domain">${domain}</span>
-            ${highlightsHtml}
-            <span class="card-chip-date">${tool.pubDate || "今日"}</span>
+            ${toolFooterMeta}
           </div>
           <div class="card-foot-actions">
             <button class="card-action-btn card-btn-save ${isSaved ? "saved" : ""}" title="${isSaved ? "取消暂存" : "加入暂存箱"}">
@@ -812,7 +845,7 @@ class AppController {
     TOOL_CATEGORIES.forEach(cat => {
       const pill = document.createElement("button");
       pill.className = `category-pill ${cat.id === "all" ? "active" : ""}`;
-      pill.innerHTML = `<span>${cat.icon}</span><span>${cat.name}</span>`;
+      pill.textContent = cat.name;
       pill.addEventListener("click", () => {
         catContainer.querySelectorAll(".category-pill").forEach(p => p.classList.remove("active"));
         pill.classList.add("active");
@@ -918,20 +951,12 @@ class AppController {
         </div>
         <div class="tool-footer">
           <button class="add-to-home-btn ${isAlreadyAdded ? "added" : ""}" data-url="${tool.url}" data-name="${tool.name}">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              ${isAlreadyAdded ? '<polyline points="20 6 9 17 4 12"></polyline>' : '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>'}
-            </svg>
             <span>${isAlreadyAdded ? "已在首页" : "加到首页"}</span>
           </button>
-          <span class="view-detail-hint" title="点击查看该工具的详细中文介绍">查看中文介绍 →</span>
-          <a class="open-link-btn" href="${tool.url}" target="_blank" rel="noopener noreferrer">
-            直达
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <line x1="10" y1="14" x2="21" y2="3"></line>
-            </svg>
-          </a>
+          <div class="tool-footer-right">
+            <span class="view-detail-hint" title="查看工具介绍">详情</span>
+            <a class="open-link-btn" href="${tool.url}" target="_blank" rel="noopener noreferrer">直达 ↗</a>
+          </div>
         </div>
       `;
 
@@ -1093,8 +1118,8 @@ class AppController {
 
     if (isNews) {
       if (titleEl) titleEl.textContent = tool.name;
-      if (badgeEl) badgeEl.textContent = tool.badge || "前沿资讯";
-      if (metaEl) metaEl.textContent = `📰 资讯出处: ${tool.sourceName || "AIHot"} • ${tool.pubDate || "今日"} • ${domain}`;
+      if (badgeEl) badgeEl.textContent = tool.badge || "跨界资讯";
+      if (metaEl) metaEl.textContent = `${tool.sourceName || "资讯"} · ${tool.pubDate || "今日"} · ${domain}`;
     } else {
       // 智能提取或匹配中文副标题
       if (!tool.titleZh && window.dailyToolsSyncEngine) {
@@ -1110,7 +1135,7 @@ class AppController {
       }
 
       if (metaEl) {
-        metaEl.textContent = `${tool.sourceType || "今日精选发现"} • ${tool.pubDate || "实时更新"} • ${domain}`;
+        metaEl.textContent = `${tool.sourceType || "全网发现"} · ${tool.pubDate || "今日"} · ${domain}`;
       }
     }
 
@@ -1121,10 +1146,10 @@ class AppController {
     if (descZhEl) {
       if (isNews && tool.reason) {
         descZhEl.innerHTML = `
-          <div style="margin-bottom: 12px; padding: 10px 14px; background: rgba(10, 132, 255, 0.12); border-left: 3px solid #0A84FF; border-radius: 6px; font-size: 13px; line-height: 1.55; color: #bfe0ff;">
-            <strong style="color: #5ac8fa;">💡 选编看点与内参：</strong>${tool.reason}
+          <div class="detail-editorial-callout">
+            <span class="detail-callout-label">看点</span>${tool.reason}
           </div>
-          <div style="font-size: 13.5px; line-height: 1.65; color: rgba(255, 255, 255, 0.85);">${currentText}</div>
+          <div class="detail-editorial-text">${currentText}</div>
         `;
       } else if (hasChinese) {
         descZhEl.textContent = currentText;
@@ -1308,22 +1333,22 @@ class AppController {
       const isSaved = window.archiveManager.isSaved(tool.url);
       if (isSaved) {
         saveArchiveBtn.classList.add("added");
-        saveArchiveText.textContent = isNews ? "★ 已存入稍后阅读" : "★ 已在稍后使用暂存箱";
+        saveArchiveText.textContent = "已暂存";
       } else {
         saveArchiveBtn.classList.remove("added");
-        saveArchiveText.textContent = isNews ? "⭐ 存入稍后阅读" : "⭐ 暂存归档 (稍后使用)";
+        saveArchiveText.textContent = "暂存";
       }
 
       saveArchiveBtn.onclick = async () => {
         const savedNow = await window.archiveManager.toggleSave(tool);
         if (savedNow) {
           saveArchiveBtn.classList.add("added");
-          saveArchiveText.textContent = isNews ? "★ 已存入稍后阅读" : "★ 已在稍后使用暂存箱";
-          this.showToast(isNews ? `已将《${tool.name.slice(0, 16)}...》存入稍后阅读！` : `已将「${tool.name}」存入稍后使用暂存箱！`);
+          saveArchiveText.textContent = "已暂存";
+          this.showToast(isNews ? `已将《${tool.name.slice(0, 16)}...》加入暂存` : `已将「${tool.name}」加入暂存`);
         } else {
           saveArchiveBtn.classList.remove("added");
-          saveArchiveText.textContent = isNews ? "⭐ 存入稍后阅读" : "⭐ 暂存归档 (稍后使用)";
-          this.showToast(`已从暂存箱移除「${tool.name}」`);
+          saveArchiveText.textContent = "暂存";
+          this.showToast(`已从暂存移除「${tool.name}」`);
         }
         this.renderHomeWideCards();
       };
@@ -1415,7 +1440,14 @@ class AppController {
       if (cached.topPick) {
         const pick = document.createElement("div");
         pick.className = "ai-overview-toppick";
-        pick.textContent = `精读推荐：${cached.topPick}`;
+        const label = document.createElement("span");
+        label.className = "ai-toppick-label";
+        label.textContent = "精读推荐";
+        const text = document.createElement("span");
+        text.className = "ai-toppick-text";
+        text.textContent = cached.topPick;
+        pick.appendChild(label);
+        pick.appendChild(text);
         nodes.push(pick);
       }
 
@@ -1628,7 +1660,7 @@ class AppController {
         this.archiveCurrentTab = "saved";
         if (clearHistoryBtn) clearHistoryBtn.style.display = "none";
         const tips = document.getElementById("archiveFooterTips");
-        if (tips) tips.textContent = "💡 暂存箱永久保存，今后要用时随时一键添加至首页或直达";
+        if (tips) tips.textContent = "已暂存条目将长期本地保存";
         this.renderArchiveList();
       });
 
@@ -1638,7 +1670,7 @@ class AppController {
         this.archiveCurrentTab = "history";
         if (clearHistoryBtn) clearHistoryBtn.style.display = "inline-flex";
         const tips = document.getElementById("archiveFooterTips");
-        if (tips) tips.textContent = "🕒 自动沉淀每日全网发现与热点动态历史，支持回溯查阅";
+        if (tips) tips.textContent = "自动沉淀每日发现历史";
         this.renderArchiveList();
       });
     }
@@ -1719,12 +1751,11 @@ class AppController {
       const isSavedTab = this.archiveCurrentTab === "saved";
       listEl.innerHTML = `
         <div style="text-align: center; padding: 48px 20px; color: var(--text-tertiary);">
-          <div style="font-size: 32px; margin-bottom: 12px;">${isSavedTab ? "📦" : "🔍"}</div>
           <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 6px;">
-            ${isSavedTab ? "暂存箱空空如也" : "未找到匹配的历史足迹"}
+            ${isSavedTab ? "暂无暂存条目" : "暂无匹配的历史记录"}
           </div>
           <div style="font-size: 12.5px;">
-            ${isSavedTab ? "在主页宽卡片或详情弹窗中点击「☆ 暂存」，即可保存万一今后要用到的好网站" : "每日全网更新后会自动在此为您沉淀历史长廊"}
+            ${isSavedTab ? "在首页信息流中点击「暂存」即可收藏到此处" : "每日刷新后将自动记录历史条目"}
           </div>
         </div>
       `;
@@ -1743,9 +1774,7 @@ class AppController {
 
       const titleDisplay = item.titleZh ? `${item.name} (${item.titleZh})` : item.name;
       const dateText = item.savedTimeText || item.discoveredTimeText || item.pubDate || "近期收录";
-      const sourceBadgeHtml = isNews 
-        ? `<span class="archive-card-source-badge" style="background: rgba(255, 75, 43, 0.25); color: #ff7654; border: 1px solid rgba(255, 75, 43, 0.45);">📰 深度资讯</span>` 
-        : `<span class="archive-card-source-badge">${item.sourceType || "全网发现"}</span>`;
+      const sourceBadgeHtml = `<span class="archive-card-source-badge">${item.sourceName || item.sourceType || "全网发现"}</span>`;
 
       card.innerHTML = `
         <div class="archive-card-left">
@@ -1756,7 +1785,7 @@ class AppController {
             <div class="archive-card-title-row">
               <span class="archive-card-title" title="${item.name}">${titleDisplay}</span>
               ${sourceBadgeHtml}
-              <span class="archive-card-date">🕒 ${dateText}</span>
+              <span class="archive-card-date">${dateText}</span>
             </div>
             <div class="archive-card-desc" title="${item.descZh || item.desc}">
               ${item.descZh || item.desc}
@@ -1765,18 +1794,18 @@ class AppController {
         </div>
         <div class="archive-card-actions">
           <button class="archive-action-btn archive-btn-add ${isAlreadyAdded ? "added" : ""}" title="加到主页快捷方式">
-            ${isAlreadyAdded ? "✓ 已在首页" : "＋ 加到首页"}
+            ${isAlreadyAdded ? "已在首页" : "加到首页"}
           </button>
-          <a class="archive-action-btn" href="${item.url}" target="_blank" rel="noopener noreferrer" title="${isNews ? "阅读新闻原文" : "在新标签页直达"}">
-            ${isNews ? "📖 阅读全文 ↗" : "直达 ↗"}
+          <a class="archive-action-btn" href="${item.url}" target="_blank" rel="noopener noreferrer">
+            ${isNews ? "阅读 ↗" : "直达 ↗"}
           </a>
           ${this.archiveCurrentTab === "saved" ? `
-            <button class="archive-action-btn btn-remove archive-btn-remove" title="从稍后使用暂存箱中移除">
-              ✕ 移除
+            <button class="archive-action-btn btn-remove archive-btn-remove" title="移除">
+              移除
             </button>
           ` : `
-            <button class="archive-action-btn archive-btn-star" title="${isCurrentlySaved ? "已暂存" : (isNews ? "稍后阅读" : "存入稍后使用")}">
-              ${isCurrentlySaved ? "★ 已存" : (isNews ? "☆ 稍后阅读" : "☆ 暂存")}
+            <button class="archive-action-btn archive-btn-star">
+              ${isCurrentlySaved ? "已存" : "暂存"}
             </button>
           `}
         </div>
@@ -2390,10 +2419,11 @@ class AppController {
           const card = document.createElement("div");
           card.className = "news-source-card";
           const isEnabled = cfg.enabledSources[src.id] !== false;
+          const domainStyle = src.domainStyle || "tech";
 
           card.innerHTML = `
             <div class="source-card-left">
-              <div class="source-card-icon">${src.icon || "📰"}</div>
+              <span class="source-card-dot dot-${domainStyle}" aria-hidden="true"></span>
               <div class="source-card-text">
                 <div class="source-card-title">
                   <span>${src.name}</span>
@@ -2411,7 +2441,7 @@ class AppController {
           const toggle = card.querySelector(".news-source-toggle");
           toggle.addEventListener("change", async () => {
             await window.dailyToolsSyncEngine.toggleSource(src.id, toggle.checked);
-            this.showToast(toggle.checked ? `已开启《${src.name}》破茧资讯源` : `已停用《${src.name}》`);
+            this.showToast(toggle.checked ? `已开启「${src.name}」` : `已停用「${src.name}」`);
             this.renderHomeSubchannelPills();
             this.renderHomeWideCards();
           });
@@ -2424,19 +2454,19 @@ class AppController {
         feedsList.innerHTML = "";
         const customFeeds = cfg.customFeeds || [];
         if (customFeeds.length === 0) {
-          feedsList.innerHTML = `<span style="font-size: 12px; color: var(--text-tertiary);">暂无自定义订阅源，在上方输入源名称与 RSS 地址即可订阅并破茧</span>`;
+          feedsList.innerHTML = `<span style="font-size: 12px; color: var(--text-tertiary);">暂无自定义订阅源</span>`;
         } else {
           customFeeds.forEach(feed => {
             const tag = document.createElement("span");
             tag.className = "custom-feed-tag";
             tag.innerHTML = `
-              <span>📡 ${feed.name}</span>
-              <button class="custom-feed-del" title="取消订阅并移除">✕</button>
+              <span>${feed.name}</span>
+              <button class="custom-feed-del" title="移除">✕</button>
             `;
             const delBtn = tag.querySelector(".custom-feed-del");
             delBtn.addEventListener("click", async () => {
               await window.dailyToolsSyncEngine.removeCustomFeed(feed.id);
-              this.showToast(`已取消订阅《${feed.name}》`);
+              this.showToast(`已取消订阅「${feed.name}」`);
               renderNewsSettings();
               this.renderHomeSubchannelPills();
               this.renderHomeWideCards();
@@ -2485,7 +2515,7 @@ class AppController {
           this.showToast("添加自定义订阅失败: " + e.message);
         } finally {
           addRssBtn.disabled = false;
-          addRssBtn.textContent = "＋ 订阅并破茧";
+          addRssBtn.textContent = "添加订阅";
         }
       };
 

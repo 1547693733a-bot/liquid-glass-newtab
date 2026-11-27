@@ -66,6 +66,12 @@
       </div>
     </header>
 
+    <!-- 极简时间与日期题头 -->
+    <section class="hero-masthead" aria-label="当前时间">
+      <time class="hero-clock-time" id="heroClockTime">--:--</time>
+      <div class="hero-clock-date" id="heroClockDate"></div>
+    </section>
+
     <!-- 空间灵动聚合搜索区域 -->
     <section class="search-section">
       <div class="search-halo"></div>
@@ -119,23 +125,22 @@
       <!-- 视图 1: 我的主页快捷方式网格 -->
       <section class="view-panel active" id="viewHome">
         
-        <!-- 首页快捷方式栏头控制器 -->
+        <!-- 首页快捷方式栏头控制器 (低存在感编辑排版标头) -->
         <div class="shortcuts-header-bar">
           <div class="shortcuts-title-group">
-            <h2 class="shortcuts-heading">常用快捷方式</h2>
+            <h2 class="shortcuts-heading">快捷入口</h2>
             <span class="shortcuts-count-pill" id="shortcutsCountPill">8 个站点</span>
           </div>
           <div class="shortcuts-header-actions">
-            <!-- 直接从书签栏添加按钮 -->
-            <button class="glass-pill-action-btn" id="homeQuickBookmarksBtn" title="从浏览器的书签栏快速导入">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button class="shortcuts-ghost-btn" id="homeQuickBookmarksBtn" title="从浏览器书签栏导入">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
               </svg>
-              <span>从书签导入</span>
+              <span>书签导入</span>
             </button>
-            <!-- 手动添加按钮 -->
-            <button class="glass-pill-action-btn primary" id="homeQuickAddBtn" title="手动输入添加网址">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <span class="shortcuts-action-sep" aria-hidden="true"></span>
+            <button class="shortcuts-ghost-btn" id="homeQuickAddBtn" title="手动添加网址">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
@@ -149,38 +154,35 @@
           <!-- 由 shortcuts.js 动态渲染快捷方式和添加按钮 -->
         </div>
 
-        <!-- 今日更新与全网新发现宽卡片区域 -->
-        <div class="home-daily-section" id="homeDailySection">
+        <!-- 今日更新与全网新发现：统一透光编辑排版画布 -->
+        <div class="home-daily-section editorial-sheet" id="homeDailySection">
           
-          <!-- 第 1 层：规整统一的主导览栏 (标题/计数 + 3模态分段控制器 + 快捷工具组) -->
+          <!-- 第 1 层：编辑部题头与下划线标签导航 -->
           <div class="home-daily-nav-bar">
-            <!-- 左侧：标题与计数徽标 -->
-            <div class="daily-nav-title-box">
-              <svg class="daily-nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <h2 class="daily-nav-heading">全网发现</h2>
-              <span class="daily-nav-count" id="homeDailyCountBadge">实时聚合</span>
+            <div class="daily-nav-left">
+              <div class="daily-nav-title-box">
+                <h2 class="daily-nav-heading">全网发现</h2>
+                <span class="daily-nav-count" id="homeDailyCountBadge">实时聚合</span>
+              </div>
+
+              <!-- 三维模式极简下划线标签 -->
+              <div class="home-daily-main-tabs" id="homeDailyMainTabs">
+                <button class="main-tab-pill active" data-mode="all">
+                  <span>综合动态</span>
+                </button>
+                <button class="main-tab-pill" data-mode="news">
+                  <span>跨界资讯</span>
+                </button>
+                <button class="main-tab-pill" data-mode="tools">
+                  <span>创新工具</span>
+                </button>
+              </div>
             </div>
 
-            <!-- 中间：三维模式分段控制器 -->
-            <div class="home-daily-main-tabs" id="homeDailyMainTabs">
-              <button class="main-tab-pill active" data-mode="all">
-                <span>综合动态</span>
-              </button>
-              <button class="main-tab-pill" data-mode="news">
-                <span>跨界资讯</span>
-              </button>
-              <button class="main-tab-pill" data-mode="tools">
-                <span>创新工具</span>
-              </button>
-            </div>
-
-            <!-- 右侧：精炼工具栏 -->
+            <!-- 右侧：静谧工具栏 -->
             <div class="daily-nav-actions">
               <button class="daily-tool-btn daily-tool-btn-accent" id="homeAiOverviewBtn" title="生成多订阅源今日总览">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <rect x="3" y="3" width="18" height="18" rx="4"></rect>
                   <path d="M8 9h8"></path>
                   <path d="M8 13h5"></path>
@@ -189,7 +191,7 @@
                 <span id="homeAiOverviewBtnText">今日总览</span>
               </button>
               <button class="daily-tool-btn" id="homeSyncDailyBtn" title="刷新全网订阅源">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <polyline points="23 4 23 10 17 10"></polyline>
                   <polyline points="1 20 1 14 7 14"></polyline>
                   <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
@@ -197,13 +199,13 @@
                 <span id="homeSyncDailyText">刷新</span>
               </button>
               <button class="daily-tool-btn" id="homeAiScanBtn" title="调用 AI 提炼当前列表摘要">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"></path>
                 </svg>
                 <span id="homeAiScanText">提炼</span>
               </button>
               <button class="daily-tool-btn" id="homeManageNewsBtn" title="管理订阅源与自定义 RSS">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path d="M4 11a9 9 0 0 1 9 9"></path>
                   <path d="M4 4a16 16 0 0 1 16 16"></path>
                   <circle cx="5" cy="19" r="1"></circle>
@@ -216,15 +218,15 @@
           <!-- 第 2 层：二级来源筛选条 -->
           <div class="daily-subchannel-wrapper">
             <div class="daily-source-pills" id="homeSourcePills">
-              <!-- 由 app.js 动态渲染来源胶囊 -->
+              <!-- 由 app.js 动态渲染来源项 -->
             </div>
           </div>
 
-          <!-- 今日总览简报卡片 -->
+          <!-- 今日总览简报区（内嵌报纸式社论简报） -->
           <div class="ai-overview-card" id="aiDailyOverviewCard">
             <div class="ai-overview-header">
               <div class="ai-overview-title-group">
-                <span class="ai-overview-spark">今日总览</span>
+                <span class="ai-overview-spark"><span class="ai-overview-dot" aria-hidden="true"></span>今日总览</span>
                 <span class="ai-overview-meta" id="aiOverviewMeta"></span>
               </div>
               <div class="ai-overview-actions">
@@ -239,49 +241,47 @@
             </div>
           </div>
 
-          <!-- 宽卡片自适应网格 (双列横向大卡片) -->
+          <!-- 双列瑞士编辑网格 -->
           <div class="home-wide-grid" id="homeWideGrid">
-            <!-- 由 app.js 动态渲染宽卡片 -->
+            <!-- 由 app.js 动态渲染 -->
           </div>
         </div>
       </section>
 
-      <!-- 视图 2: 精选工具库 (独立常备纯净工具库，不含主页每日动态) -->
+      <!-- 视图 2: 精选工具库 -->
       <section class="view-panel" id="viewTools">
-        <div class="tools-header">
-          <!-- 分类筛选器 -->
-          <div class="tools-categories" id="toolCategories"></div>
-          <!-- 右侧搜索过滤 -->
-          <div class="tools-actions-wrapper">
-            <div class="tools-filter-wrapper">
-              <svg class="tools-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              <input type="text" class="tools-filter-input" id="toolFilterInput" placeholder="在常驻精选工具中搜索..." />
+        <div class="editorial-sheet tools-sheet">
+          <div class="tools-header">
+            <div class="tools-categories" id="toolCategories"></div>
+            <div class="tools-actions-wrapper">
+              <div class="tools-filter-wrapper">
+                <svg class="tools-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" class="tools-filter-input" id="toolFilterInput" placeholder="搜索精选工具..." />
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 奇趣探索更新状态条 -->
-        <div class="fun-explore-banner" id="funExploreBanner" style="display: none;">
-          <div class="fun-banner-left">
-            <span class="fun-banner-title">奇趣探索</span>
-            <span class="fun-banner-badge" id="funLastSyncBadge">刚刚更新</span>
+          <div class="fun-explore-banner" id="funExploreBanner" style="display: none;">
+            <div class="fun-banner-left">
+              <span class="fun-banner-title">奇趣探索</span>
+              <span class="fun-banner-badge" id="funLastSyncBadge">刚刚更新</span>
+            </div>
+            <button class="daily-tool-btn" id="funSyncBtn" title="刷新奇趣探索源">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+              <span id="funSyncBtnText">换一批</span>
+            </button>
           </div>
-          <button class="glass-pill-action-btn" id="funSyncBtn" title="刷新奇趣探索源">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <polyline points="1 20 1 14 7 14"></polyline>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-            </svg>
-            <span id="funSyncBtnText">换一批</span>
-          </button>
-        </div>
 
-        <!-- 工具卡片网格 -->
-        <div class="tools-grid" id="toolsGrid">
-          <!-- 由 app.js 动态渲染 -->
+          <div class="tools-grid" id="toolsGrid">
+            <!-- 由 app.js 动态渲染 -->
+          </div>
         </div>
       </section>
 
@@ -329,17 +329,17 @@
       <!-- 面板 1: 手动添加/编辑表单 -->
       <div class="modal-tab-panel active" id="panelManualShortcut">
         <div class="form-group">
-          <label class="form-label" for="shortcutUrlInput">网址链接 (URL) *</label>
-          <input type="text" class="form-input" id="shortcutUrlInput" placeholder="例如：https://github.com" />
+          <label class="form-label" for="shortcutUrlInput">网址 *</label>
+          <input type="text" class="form-input" id="shortcutUrlInput" placeholder="https://github.com" />
         </div>
         <div class="form-group">
-          <label class="form-label" for="shortcutNameInput">名称 (留空将自动从网址提取)</label>
-          <input type="text" class="form-input" id="shortcutNameInput" placeholder="例如：GitHub" />
+          <label class="form-label" for="shortcutNameInput">名称</label>
+          <input type="text" class="form-input" id="shortcutNameInput" placeholder="留空自动提取" />
         </div>
         <div class="form-group">
-          <label class="form-label" for="shortcutIconInput">自定义图标链接 (可选，默认自动识别)</label>
-          <input type="text" class="form-input" id="shortcutIconInput" placeholder="支持 PNG/SVG/ICO 图标图片链接" />
-          <div class="form-hint">留空时系统将通过高清 Favicon 引擎自动获取网站 Logo</div>
+          <label class="form-label" for="shortcutIconInput">自定义图标（可选）</label>
+          <input type="text" class="form-input" id="shortcutIconInput" placeholder="https://..." />
+          <div class="form-hint">留空自动获取网站图标</div>
         </div>
         <div class="modal-actions">
           <button class="btn-secondary" id="shortcutCancelBtn">取消</button>
