@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Liquid Tab - 苹果液态玻璃新标签页",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "基于苹果现代液态玻璃质感的新标签页。包含跨界破茧多源资讯流 (知乎日报、Aeon人文、BBC中文、FT中文网、自然科学、艺术美学、Solidot、阮一峰周刊、少数派、极客公园、HN、AIHot与自定义RSS订阅)、主页全网发现宽卡片、奇趣探索源、历史归档与稍后使用、AI 大模型深度提炼与动态壁纸。",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
